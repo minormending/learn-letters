@@ -94,8 +94,49 @@ advancing normally.
 | Find the Letter | hear a phoneme → pick the grapheme | app |
 | Say the Sound   | see a grapheme → produce the phoneme | grown-up |
 | Big & Little    | uppercase ↔ lowercase | app |
-| Blend It        | sound out and blend a CVC word | grown-up |
+| Listen & Blend  | blend sounds into a word **by ear, no print** | app |
+| Blend It        | sound out and blend a written word | grown-up |
 | Build It        | hear a word → spell it (encoding) | app |
+
+### Blending has a prerequisite
+
+Blend It asks for two things at once: turning letters into sounds, and pushing
+those sounds together into a word. A child who cannot do the second one yet
+will not learn it with print in the way — that is two unlearned skills stacked.
+
+**Listen & Blend** teaches the same skill with the letters removed. Nothing is
+written on that screen at all; the child hears the sounds and picks a picture.
+Pictures are safe here precisely because there is no print: the no-picture rule
+exists to stop a child reading the image instead of the word, and there is no
+word to read.
+
+It climbs in three rungs, which is the part usually skipped:
+
+| Score | What they hear | What they have to do |
+|---|---|---|
+| 0–4  | `mmmaaat` — one stream | recognise it |
+| 5–9  | `/m/` … `at` — onset and rime | hold two pieces |
+| 10+  | `/m/ /a/ /t/` — three sounds | hold three and merge |
+
+Most children who cannot manage three sounds can manage two, and that middle
+rung is the one missing from most materials. The score climbs one per correct
+answer and drops **two** per miss, so a child who loses the thread is put back
+on the easier rung immediately rather than after five more failures.
+
+Distractors grade separately: unrelated words at first (so the first sound is
+enough), then rhymes (`can`/`fan`/`man`, so the onset matters), then minimal
+pairs (`pin`/`pen`/`pan`, where only the vowel differs and the whole word has
+to be held). The word pool is chosen so a target always has real rivals at the
+tier being asked for.
+
+**Listen & Blend is not gated by level.** Blending by ear is a listening skill
+and should run ahead of letter knowledge, not behind it — and level 1 only has
+five words to practise on.
+
+In Blend It itself, **Bit by bit** is the button for a child who can say all
+three sounds and still cannot say the word: it rebuilds cumulatively — `/m/`,
+then `ma`, then `mat` — because they are losing the front of the word before
+reaching the end.
 
 Encoding (Build It) is in there because spelling a word reinforces decoding it
 more than another round of tapping.
