@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Letter Sounds</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sounds">
+<meta name="theme-color" content="#f7f4ee">
+<meta name="description" content="A quiet, systematic phonics practice game for a beginning reader.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- Tap-to-start exists because iOS will not let audio play until the
+     child (or grown-up) has touched the screen once. -->
+<section id="screen-start" class="screen on">
+  <div class="pad">
+    <h1 class="brand">Letter Sounds</h1>
+    <p class="lede">Short practice. Real sounds. No guessing.</p>
+    <button id="start-btn" class="btn btn-big">Tap to start</button>
+    <p id="start-err" class="err"></p>
+  </div>
+</section>
+
+<section id="screen-home" class="screen">
+  <div class="pad">
+    <h1 id="home-title" class="brand hold-target">Letter Sounds</h1>
+    <p id="home-level" class="level-line"></p>
+    <div id="mode-grid" class="mode-grid"></div>
+    <p class="hint-line">Hold the title for grown-up settings</p>
+  </div>
+</section>
+
+<section id="screen-play" class="screen">
+  <header class="bar">
+    <button class="icon-btn" data-home aria-label="Back to the menu">‹</button>
+    <div id="dots" class="dots"></div>
+    <span id="left-count" class="left-count"></span>
+  </header>
+  <div id="stage" class="stage"></div>
+</section>
+
+<section id="screen-done" class="screen">
+  <div class="pad center">
+    <div class="done-emoji">🎉</div>
+    <h2 class="done-h">All done!</h2>
+    <div id="done-stars" class="stars"></div>
+    <p id="done-note" class="unlock-note"></p>
+    <button id="again-btn" class="btn btn-big">Play again</button>
+    <button class="btn btn-soft" data-home>Menu</button>
+  </div>
+</section>
+
+<section id="screen-parent" class="screen">
+  <div class="pad scroll">
+    <h2 class="p-h">Grown-up settings</h2>
+
+    <div class="p-stats">
+      <div><span class="p-num" id="p-level">1</span><span class="p-lab">level</span></div>
+      <div><span class="p-num" id="p-sessions">0</span><span class="p-lab">sessions</span></div>
+    </div>
+    <p class="p-last">Last: <span id="p-last">No sessions yet</span></p>
+
+    <h3 class="p-sub">Letter mastery</h3>
+    <p class="p-note">Teaching order, not alphabetical. Greyed letters are not
+      introduced yet. A full bar means it is solid.</p>
+    <div id="p-letters" class="p-letters"></div>
+
+    <h3 class="p-sub">Session length</h3>
+    <p class="p-note">Shorter is usually better. Ending while they still want
+      more is the goal.</p>
+    <label class="p-row">
+      <input type="range" id="p-length" min="4" max="20" step="1">
+      <span id="p-length-val" class="p-val"></span>
+    </label>
+
+    <h3 class="p-sub">Level</h3>
+    <p class="p-note">Auto advances when every letter in the level is solid.
+      Pin a level to stay put or to revisit.</p>
+    <select id="p-level-pin" class="p-select"></select>
+
+    <h3 class="p-sub">Options</h3>
+    <label class="p-check"><input type="checkbox" id="p-rewards">
+      <span>Picture reward after a correct word</span></label>
+    <label class="p-check"><input type="checkbox" id="p-blendonly">
+      <span>Never use the device voice (blended sounds only)</span></label>
+
+    <div class="p-actions">
+      <button id="p-reset" class="btn btn-warn">Reset progress</button>
+      <button id="p-close" class="btn btn-accent">Done</button>
+    </div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/modes.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

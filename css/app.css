@@ -1,0 +1,259 @@
+/* Andika (SIL, OFL) is drawn for beginning readers: single-storey a and g,
+   so the printed letter matches the one the child is taught to write.
+   Self-hosted so the app still works with no connection. */
+@font-face {
+  font-family: 'Andika'; font-style: normal; font-weight: 400;
+  font-display: swap; src: url('../fonts/andika-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Andika'; font-style: normal; font-weight: 700;
+  font-display: swap; src: url('../fonts/andika-700.woff2') format('woff2');
+}
+
+:root {
+  --bg:      #f7f4ee;
+  --surface: #ffffff;
+  --ink:     #2f2a25;
+  --muted:   #8a8178;
+  --line:    #e4ddd2;
+  --accent:  #3f7d6a;
+  --accent-d:#2f6153;
+  --warm:    #d98a4a;
+  --yes:     #4f8a5b;
+  --soft:    #efe9df;
+  --tap: min(19vw, 148px);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--ink);
+  font-family: 'Andika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-user-select: none; user-select: none;
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+.screen {
+  position: fixed; inset: 0; display: none;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.screen.on { display: flex; flex-direction: column; }
+
+.pad {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.1rem; padding: 4vh 5vw; text-align: center;
+}
+.pad.scroll { justify-content: flex-start; align-items: stretch;
+              overflow-y: auto; -webkit-overflow-scrolling: touch;
+              text-align: left; max-width: 720px; margin: 0 auto; width: 100%; }
+
+/* ---------- type ---------- */
+.brand   { font-size: clamp(2rem, 6vw, 3.4rem); margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+.lede    { color: var(--muted); font-size: clamp(1rem, 2.4vw, 1.35rem); margin: 0; }
+.err     { color: #b4503c; min-height: 1.4em; margin: 0; }
+.level-line { color: var(--muted); font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+              margin: -0.4rem 0 0.6rem; letter-spacing: 0.22em; }
+.hint-line  { color: var(--line); font-size: 0.85rem; margin: 0.4rem 0 0; }
+
+.hold-target { transition: transform 1.4s ease, color 1.4s ease; }
+.hold-target.holding { transform: scale(0.94); color: var(--accent); }
+
+/* ---------- buttons ---------- */
+.btn {
+  font-family: inherit; font-size: clamp(1.05rem, 2.6vw, 1.4rem); font-weight: 700;
+  border: none; border-radius: 18px; padding: 0.85em 1.6em;
+  background: var(--soft); color: var(--ink);
+  min-height: 62px; cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+.btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.55; }
+.btn-big    { background: var(--accent); color: #fff; font-size: clamp(1.3rem, 3.4vw, 1.9rem);
+              padding: 0.9em 2.2em; border-radius: 22px; }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-yes    { background: var(--yes); color: #fff; }
+.btn-soft   { background: var(--soft); color: var(--ink); }
+.btn-warn   { background: transparent; color: #b4503c; box-shadow: inset 0 0 0 2px #e6c6bd; }
+.btn-hint   { font-size: 1rem; min-height: 52px; opacity: 0.85; }
+
+.icon-btn {
+  font-size: 2.2rem; line-height: 1; background: none; border: none;
+  color: var(--muted); width: 56px; height: 56px; cursor: pointer;
+  font-family: inherit;
+}
+
+/* ---------- home ---------- */
+.mode-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.9rem; width: 100%; max-width: 760px;
+}
+.mode-card {
+  display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 22px;
+  padding: 1.3rem 0.9rem; cursor: pointer; font-family: inherit;
+  min-height: 132px; justify-content: center;
+  transition: transform 0.08s ease, border-color 0.15s ease;
+}
+.mode-card:active { transform: scale(0.97); border-color: var(--accent); }
+.mode-emoji { font-size: 2.1rem; }
+.mode-title { font-size: 1.2rem; font-weight: 700; color: var(--ink); }
+.mode-sub   { font-size: 0.9rem; color: var(--muted); }
+
+/* ---------- play ---------- */
+.bar {
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 0.5rem 1rem; min-height: 62px;
+}
+.dots { flex: 1; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.dot {
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--line); transition: background 0.2s ease, transform 0.2s ease;
+}
+.dot.done { background: var(--accent); }
+.dot.now  { background: var(--warm); transform: scale(1.35); }
+.left-count { color: var(--muted); font-size: 0.95rem; min-width: 62px; text-align: right; }
+
+/* The task screen stays close to empty on purpose. Decoration next to a
+   prompt competes for exactly the attention we are asking for. */
+.stage {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: clamp(1rem, 3.5vh, 2.2rem); padding: 1rem 4vw 5vh; position: relative;
+}
+.prompt { font-size: clamp(1.15rem, 3vw, 1.7rem); color: var(--muted); }
+
+/* Descenders on p, g, j, q and y need real room here -- a tight line-height
+   lets them collide with whatever sits underneath. */
+.big-letter {
+  font-size: clamp(5rem, 26vh, 13rem); line-height: 1.22; font-weight: 700;
+}
+.big-word { font-size: clamp(3rem, 14vh, 7rem); line-height: 1.22;
+            font-weight: 700; letter-spacing: 0.06em; }
+.pair-row { display: flex; gap: clamp(1.5rem, 6vw, 4rem); align-items: center; }
+
+.speaker {
+  width: var(--tap); height: var(--tap); border-radius: 50%;
+  background: var(--accent); border: none; color: #fff;
+  display: grid; place-items: center; cursor: pointer;
+  box-shadow: 0 6px 0 var(--accent-d);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.speaker:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--accent-d); }
+.spk-ico { font-size: calc(var(--tap) * 0.42); }
+
+.tiles { display: flex; gap: clamp(0.7rem, 2.5vw, 1.4rem); flex-wrap: wrap; justify-content: center; }
+.tile {
+  width: var(--tap); height: var(--tap);
+  font-family: inherit; font-size: calc(var(--tap) * 0.52); font-weight: 700;
+  background: var(--surface); color: var(--ink);
+  border: 3px solid var(--line); border-radius: 24px; cursor: pointer;
+  transition: transform 0.09s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.tile:active { transform: scale(0.95); }
+.tile.hit  { background: var(--yes); border-color: var(--yes); color: #fff; }
+/* A miss dims and steps back. No red, no buzzer, no lost points -- response
+   cost is what makes a child stop trying. */
+.tile.miss { background: var(--soft); border-color: var(--line);
+             color: var(--muted); transform: scale(0.9); }
+.tile:disabled { opacity: 0.28; }
+.tile-sm { width: calc(var(--tap) * 0.74); height: calc(var(--tap) * 0.74);
+           font-size: calc(var(--tap) * 0.4); border-radius: 18px; }
+.tiles-bank { max-width: 620px; }
+
+/* ---------- word rows ---------- */
+.word-row { display: flex; gap: clamp(0.4rem, 1.6vw, 1rem); }
+.word-row.blending { gap: 2px; }
+.word-row { transition: gap 0.5s ease; }
+.wbox {
+  width: calc(var(--tap) * 0.86); height: calc(var(--tap) * 0.98);
+  display: grid; place-items: center;
+  font-family: inherit; font-size: calc(var(--tap) * 0.5); font-weight: 700;
+  background: var(--surface); color: var(--ink);
+  border: 3px solid var(--line); border-radius: 20px; cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+.wbox.lit   { background: var(--warm); border-color: var(--warm); color: #fff;
+              transform: translateY(-8px) scale(1.05); }
+.wbox.empty { background: var(--soft); border-style: dashed; }
+
+.ctrl-row { display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
+
+.grader {
+  display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+  justify-content: center; margin-top: 0.4rem;
+  padding-top: 1rem; border-top: 2px dashed var(--line); width: min(560px, 90%);
+}
+.grader-label { color: var(--muted); font-size: 0.95rem; width: 100%; }
+
+/* Celebration is fenced off in time: it fires after the answer, so it never
+   competes with the prompt. */
+.burst {
+  position: absolute; font-size: clamp(5rem, 22vh, 11rem);
+  pointer-events: none; animation: pop 0.62s ease-out forwards;
+}
+@keyframes pop {
+  0%   { transform: scale(0.3); opacity: 0; }
+  35%  { transform: scale(1.15); opacity: 1; }
+  70%  { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.05); opacity: 0.92; }
+}
+.stage.modelling { opacity: 0.96; }
+
+/* ---------- done ---------- */
+.pad.center { justify-content: center; }
+.done-emoji { font-size: clamp(4rem, 16vh, 8rem); }
+.done-h     { font-size: clamp(1.8rem, 5vw, 3rem); margin: 0; }
+.stars      { font-size: 1.7rem; letter-spacing: 0.15em; max-width: 90%; line-height: 1.4; }
+.rstar      { opacity: 0.95; }
+.done-score { color: var(--muted); font-size: 1.15rem; margin: 0; }
+.unlock-note {
+  display: none; background: #eaf2ee; color: var(--accent-d);
+  padding: 0.8rem 1.4rem; border-radius: 16px; font-size: 1.1rem; margin: 0;
+}
+.unlock-note.on { display: block; }
+
+/* ---------- grown-up panel ---------- */
+.p-h   { font-size: 1.7rem; margin: 0.6rem 0 0.2rem; }
+.p-sub { font-size: 1.15rem; margin: 1.6rem 0 0.2rem; }
+.p-note{ color: var(--muted); font-size: 0.95rem; margin: 0 0 0.7rem; line-height: 1.45; max-width: 62ch; }
+.p-stats { display: flex; gap: 2.4rem; margin: 0.6rem 0 0.4rem; }
+.p-num { font-size: 2.2rem; font-weight: 700; display: block; line-height: 1; }
+.p-lab { color: var(--muted); font-size: 0.9rem; }
+.p-letters { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+             gap: 0.55rem; max-width: 620px; }
+.p-cell { text-align: center; }
+.p-cell.off { opacity: 0.3; }
+.p-ch  { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.p-bar { height: 7px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.p-fill{ height: 100%; background: var(--warm); border-radius: 4px; transition: width 0.3s ease; }
+.p-fill.solid { background: var(--accent); }
+.p-row { display: flex; align-items: center; gap: 1rem; max-width: 420px; }
+.p-row input[type=range] { flex: 1; height: 40px; }
+.p-val { font-size: 1.3rem; font-weight: 700; min-width: 2ch; }
+.p-select {
+  font-family: inherit; font-size: 1.05rem; padding: 0.7em 1em;
+  border-radius: 14px; border: 2px solid var(--line);
+  background: var(--surface); color: var(--ink); max-width: 420px; width: 100%;
+}
+.p-check { display: flex; align-items: center; gap: 0.8rem; margin: 0.6rem 0;
+           font-size: 1.05rem; cursor: pointer; }
+.p-check input { width: 26px; height: 26px; }
+.p-actions { display: flex; gap: 1rem; margin: 2.2rem 0 3rem; flex-wrap: wrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+.wbox.hinting { border-color: var(--warm); border-style: solid;
+                animation: nudge 0.5s ease-in-out 2; }
+@keyframes nudge {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+.p-last { color: var(--muted); font-size: 1rem; margin: 0.2rem 0 0; }
