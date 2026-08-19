@@ -195,12 +195,17 @@ const App = (function () {
       const row = s.letters.filter(x => x.letter === l)[0];
       const cell = el('div', 'p-cell' + (row.active ? '' : ' off'));
       cell.appendChild(el('div', 'p-ch', l));
-      const bar = el('div', 'p-bar');
-      const fill = el('div', 'p-fill');
-      fill.style.width = (row.score / Progress.MAX * 100) + '%';
-      if (row.score >= Progress.MASTERED) fill.classList.add('solid');
-      bar.appendChild(fill);
-      cell.appendChild(bar);
+      /* Two bars: sound knowledge on top, big/little matching underneath.
+         They come apart often -- a child can know /b/ and still not connect
+         B to b -- and only the top one gates level unlocks. */
+      [['score', 'p-fill'], ['pairScore', 'p-fill p-fill-pair']].forEach(function (spec) {
+        const bar = el('div', 'p-bar');
+        const fill = el('div', spec[1]);
+        fill.style.width = (row[spec[0]] / Progress.MAX * 100) + '%';
+        if (row[spec[0]] >= Progress.MASTERED) fill.classList.add('solid');
+        bar.appendChild(fill);
+        cell.appendChild(bar);
+      });
       grid.appendChild(cell);
     });
 
@@ -293,6 +298,16 @@ const App = (function () {
     holdToOpen(document.getElementById('home-title'), 1400, function () {
       buildParent(); show('parent');
     });
+
+    /* Belt and braces on the suspended-context problem: resume when the app
+       comes back to the foreground, and on any touch. Cheap when already
+       running, and it means a locked iPad never comes back mute. */
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) Audio3.ensureRunning();
+    });
+    document.addEventListener('pointerdown', function () {
+      Audio3.ensureRunning();
+    }, { passive: true });
 
     /* iPad: no double-tap zoom, no rubber-band scroll, no text selection. */
     document.addEventListener('gesturestart', e => e.preventDefault());

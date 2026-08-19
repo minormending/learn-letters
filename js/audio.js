@@ -57,6 +57,17 @@ const Audio3 = (function () {
     return ctx.resume();
   }
 
+  /* iOS suspends the context whenever the tab is backgrounded or the iPad
+     sleeps, and a suspended context has a frozen clock -- everything
+     scheduled against currentTime silently never plays while the wait()
+     promises still resolve on their setTimeout. The game would keep
+     advancing with no sound and no visible symptom. */
+  function ensureRunning() {
+    if (!ctx) return Promise.resolve();
+    if (ctx.state === 'running') return Promise.resolve();
+    return ctx.resume().catch(function () {});
+  }
+
   function load(names) {
     return Promise.all(names.map(function (n) {
       if (buffers[n]) return Promise.resolve();
@@ -94,21 +105,29 @@ const Audio3 = (function () {
 
   /* One letter's sound. Multi-file letters (q, x) play as a tight pair. */
   function say(letter) {
-    const names = DATA.PHONEME[letter] || [letter];
-    let t = ctx.currentTime + 0.05;
-    names.forEach(function (n) { t = schedule(n, t, 1); });
-    return wait(t - ctx.currentTime + 0.05);
+    return ensureRunning().then(function () {
+      const names = DATA.PHONEME[letter] || [letter];
+      let t = ctx.currentTime + 0.05;
+      names.forEach(function (n) { t = schedule(n, t, 1); });
+      return wait(t - ctx.currentTime + 0.05);
+    });
   }
 
   function sayName(name) {
-    const t = schedule(name, ctx.currentTime + 0.05, 1);
-    return wait(t - ctx.currentTime + 0.05);
+    return ensureRunning().then(function () {
+      const t = schedule(name, ctx.currentTime + 0.05, 1);
+      return wait(t - ctx.currentTime + 0.05);
+    });
   }
 
   /* Sound out a word.
      'separate' -- distinct phonemes with a clear gap, for isolating sounds
      'blend'    -- continuous, no gap: this is the one that teaches reading */
   function sound(word, style, onEach) {
+    return ensureRunning().then(function () { return soundNow(word, style, onEach); });
+  }
+
+  function soundNow(word, style, onEach) {
     const letters = word.split('');
     const gap = style === 'separate' ? 0.45 : 0;
     let t = ctx.currentTime + 0.08;
@@ -141,19 +160,39 @@ const Audio3 = (function () {
       return sound(word, 'blend');
     }
     return new Promise(function (res) {
+      let started = false, done = false;
+
+      const finish = function () { if (!done) { done = true; res(); } };
+      /* Cancel before blending so a late-arriving voice cannot talk over the
+         fallback we just started. */
+      const fallback = function () {
+        if (done) return;
+        done = true;
+        try { speechSynthesis.cancel(); } catch (e) {}
+        sound(word, 'blend').then(res);
+      };
+
       const u = new SpeechSynthesisUtterance(word);
       u.rate = 0.75;
       u.pitch = 1.05;
-      const voices = speechSynthesis.getVoices();
-      const uk = voices.filter(v => /en-GB/i.test(v.lang));
+      const uk = speechSynthesis.getVoices().filter(v => /en-GB/i.test(v.lang));
       if (uk.length) u.voice = uk[0];
-      let done = false;
-      const finish = function () { if (!done) { done = true; res(); } };
+      u.onstart = function () { started = true; };
       u.onend = finish;
-      u.onerror = function () { if (!done) { done = true; sound(word, 'blend').then(res); } };
-      setTimeout(finish, 2500);
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
+      u.onerror = fallback;
+
+      try {
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      } catch (e) { return fallback(); }
+
+      /* Speech synthesis can refuse silently: no onstart, no onerror, no
+         audio. It happens on iOS outside a user gesture, and it is what makes
+         a mode whose whole prompt is a spoken word play nothing at all. If it
+         has not begun shortly after being asked, it is not going to. */
+      setTimeout(function () { if (!started) fallback(); }, 700);
+      /* And if it starts but never reports finishing, do not hang the item. */
+      setTimeout(function () { if (started) finish(); }, 3500);
     });
   }
 
@@ -188,7 +227,7 @@ const Audio3 = (function () {
     return Object.keys(set);
   }
 
-  return { unlock, load, say, sayName, sound, speakWord,
+  return { unlock, load, say, sayName, sound, speakWord, ensureRunning,
            chime, nudge, fanfare, allPhonemeFiles,
            get ready() { return unlocked; } };
 })();
