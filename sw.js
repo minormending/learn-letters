@@ -1,6 +1,6 @@
 /* Offline cache. The whole app is ~700KB, so precache all of it: this is
    for a five-year-old in a car, not a page that needs to be clever. */
-const CACHE = 'letter-sounds-v2';
+const CACHE = 'letter-sounds-v3';
 
 const ASSETS = [
   './',
@@ -8,6 +8,7 @@ const ASSETS = [
   'manifest.webmanifest',
   'css/app.css',
   'js/data.js',
+  'js/guides.js',
   'js/progress.js',
   'js/audio.js',
   'js/modes.js',

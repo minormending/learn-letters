@@ -34,7 +34,14 @@ const App = (function () {
       card.appendChild(el('span', 'mode-emoji', m.emoji));
       card.appendChild(el('span', 'mode-title', m.title));
       card.appendChild(el('span', 'mode-sub', m.sub));
-      card.onclick = function () { start(id); };
+      card.onclick = function () { launch(id); };
+
+      /* Coaching is a tap away rather than in the child's face. */
+      const help = el('button', 'mode-help', '?');
+      help.setAttribute('aria-label', 'Parent guide for ' + m.title);
+      help.onclick = function (e) { e.stopPropagation(); markGuideSeen(id); openGuide(id, id); };
+      card.appendChild(help);
+
       grid.appendChild(card);
     });
     const lvl = Progress.level();
@@ -42,7 +49,60 @@ const App = (function () {
       'Level ' + lvl + ' · ' + DATA.lettersUpTo(lvl).join(' ');
   }
 
+  /* ---------- parent guides ---------- */
+  let guideReturn = null;   // where Start playing should go, if anywhere
+
+  function openGuide(key, thenPlay) {
+    const g = GUIDES[key];
+    if (!g) return;
+    guideReturn = thenPlay || null;
+
+    document.getElementById('g-emoji').textContent = g.emoji;
+    document.getElementById('g-title').textContent = g.title;
+    document.getElementById('g-lead').textContent = g.lead;
+
+    const box = document.getElementById('g-sections');
+    clear(box);
+    g.sections.forEach(function (sec) {
+      const kind = GUIDE_KIND[sec.kind] || GUIDE_KIND.do;
+      const card = el('section', 'g-sec g-' + sec.kind);
+      const head = el('div', 'g-sec-head');
+      head.appendChild(el('span', 'g-ico', kind.icon));
+      head.appendChild(el('h3', 'g-h', sec.head));
+      card.appendChild(head);
+      card.appendChild(el('p', 'g-body', sec.body));
+      box.appendChild(card);
+    });
+
+    const go = document.getElementById('g-go');
+    go.style.display = thenPlay ? '' : 'none';
+    document.getElementById('g-back').textContent = thenPlay ? 'Not now' : 'Back';
+    document.querySelector('.guide-wrap').scrollTop = 0;
+    show('guide');
+  }
+
+  function markGuideSeen(key) {
+    const seen = Settings.get('seenGuides') || {};
+    seen[key] = true;
+    Settings.set('seenGuides', seen);
+  }
+
+  function guideSeen(key) {
+    const seen = Settings.get('seenGuides') || {};
+    return !!seen[key];
+  }
+
   /* ---------- session ---------- */
+  /* First time on a game, show the parent how to run it. Once only, and
+     switchable off for anyone who does not want the interruption. */
+  function launch(modeId) {
+    if (Settings.get('guideFirst') && !guideSeen(modeId)) {
+      markGuideSeen(modeId);
+      return openGuide(modeId, modeId);
+    }
+    start(modeId);
+  }
+
   function start(modeId) {
     const mode = MODES[modeId];
     session = {
@@ -233,6 +293,25 @@ const App = (function () {
       buildHome();
     };
 
+    const gl = document.getElementById('p-guides');
+    clear(gl);
+    GUIDE_ORDER.forEach(function (key) {
+      const g = GUIDES[key];
+      const row = el('button', 'p-guide');
+      row.appendChild(el('span', 'p-guide-emoji', g.emoji));
+      const txt = el('span', 'p-guide-txt');
+      txt.appendChild(el('span', 'p-guide-title', g.title));
+      txt.appendChild(el('span', 'p-guide-lead', g.lead));
+      row.appendChild(txt);
+      row.appendChild(el('span', 'p-guide-chev', '›'));
+      row.onclick = function () { openGuide(key, null); };
+      gl.appendChild(row);
+    });
+
+    const gf = document.getElementById('p-guidefirst');
+    gf.checked = Settings.get('guideFirst');
+    gf.onchange = function () { Settings.set('guideFirst', gf.checked); };
+
     const rw = document.getElementById('p-rewards');
     rw.checked = Settings.get('rewards');
     rw.onchange = function () { Settings.set('rewards', rw.checked); };
@@ -262,7 +341,7 @@ const App = (function () {
 
   /* ---------- boot ---------- */
   function init() {
-    ['start', 'home', 'play', 'done', 'parent'].forEach(function (n) {
+    ['start', 'home', 'play', 'done', 'parent', 'guide'].forEach(function (n) {
       screens[n] = document.getElementById('screen-' + n);
     });
 
@@ -289,6 +368,17 @@ const App = (function () {
       b.onclick = function () { session = null; buildHome(); show('home'); };
     });
     document.getElementById('p-close').onclick = function () { buildHome(); show('home'); };
+
+    document.getElementById('g-go').onclick = function () {
+      const id = guideReturn;
+      guideReturn = null;
+      if (id) start(id);
+    };
+    document.getElementById('g-back').onclick = function () {
+      guideReturn = null;
+      buildHome();
+      show('home');
+    };
     document.getElementById('p-reset').onclick = function () {
       if (confirm('Erase all progress and start from Level 1?')) {
         Progress.reset(); buildParent(); buildHome();

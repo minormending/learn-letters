@@ -6,6 +6,8 @@ const Settings = (function () {
     sessionLength: 10,   // fixed, visible endpoint -- the session is built to END
     blendOnly: false,    // skip speech synthesis for whole words
     rewards: true,       // emoji payoff after a correct word read
+    guideFirst: true,    // show the coaching guide before an unplayed game
+    seenGuides: {},      // which guides have already been shown
     maxLevel: 0          // 0 = follow unlocks, >0 = parent pinned a level
   };
   let s;

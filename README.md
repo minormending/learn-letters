@@ -100,6 +100,22 @@ advancing normally.
 Encoding (Build It) is in there because spelling a word reinforces decoding it
 more than another round of tapping.
 
+## Coaching guides
+
+Every game has a parent guide behind the “?” on its card, plus a general
+“Before you start”. Each one leads with the exact words to say, then what to
+listen for and the few things worth not doing — the useful thing to hand a
+parent is a script, not a description.
+
+The first time you open a game it shows the guide before the game, once, with
+a Start playing button. Switchable off in the grown-up panel, and all six are
+listed there permanently.
+
+They are styled as their own thing: system typeface, denser layout, real
+hierarchy. The child's screens stay bare; this is where detail is allowed to
+live. Guide content is in `js/guides.js` and is plain data — sections are
+tagged `say`, `do`, `watch`, `avoid` or `tip`, which is what colours them.
+
 ## Grown-up panel
 
 Press and hold the title on the home screen for about 1.5 seconds. Shows

@@ -56,6 +56,28 @@
   </div>
 </section>
 
+<!-- Parent-facing. Deliberately a different visual language from the child
+     screens: denser, system typeface, real hierarchy. -->
+<section id="screen-guide" class="screen">
+  <div class="guide-wrap">
+    <article class="guide">
+      <header class="guide-head">
+        <span class="guide-emoji" id="g-emoji"></span>
+        <div>
+          <p class="guide-eyebrow">Parent guide</p>
+          <h2 class="guide-title" id="g-title"></h2>
+        </div>
+      </header>
+      <p class="guide-lead" id="g-lead"></p>
+      <div id="g-sections"></div>
+    </article>
+  </div>
+  <footer class="guide-foot">
+    <button id="g-back" class="btn btn-soft">Back</button>
+    <button id="g-go" class="btn btn-accent">Start playing</button>
+  </footer>
+</section>
+
 <section id="screen-parent" class="screen">
   <div class="pad scroll">
     <h2 class="p-h">Grown-up settings</h2>
@@ -86,7 +108,14 @@
       Pin a level to stay put or to revisit.</p>
     <select id="p-level-pin" class="p-select"></select>
 
+    <h3 class="p-sub">Coaching guides</h3>
+    <p class="p-note">What to say, what to listen for, and the handful of
+      things worth not doing. Also on the “?” beside each game.</p>
+    <div id="p-guides" class="p-guides"></div>
+
     <h3 class="p-sub">Options</h3>
+    <label class="p-check"><input type="checkbox" id="p-guidefirst">
+      <span>Show the guide before a game you haven’t played yet</span></label>
     <label class="p-check"><input type="checkbox" id="p-rewards">
       <span>Picture reward after a correct word</span></label>
     <label class="p-check"><input type="checkbox" id="p-blendonly">
@@ -100,6 +129,7 @@
 </section>
 
 <script src="js/data.js"></script>
+<script src="js/guides.js"></script>
 <script src="js/progress.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/modes.js"></script>
