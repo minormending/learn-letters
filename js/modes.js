@@ -77,12 +77,19 @@ MODES.find = {
     const opts = shuffle([t].concat(
       distractors(t, n - 1, Progress.activeLetters(), s >= Progress.MASTERED)));
 
+    /* Once the child can already match this letter's two forms, sometimes ask
+       in uppercase. It is the same sound either way, and that is the point --
+       otherwise the sound only ever gets attached to the lowercase shape.
+       Whole row or nothing; mixing cases inside one row just adds noise. */
+    const upper = Progress.pairScore(t) >= Progress.MASTERED && Math.random() < 0.35;
+    const face = function (c) { return upper ? c.toUpperCase() : c; };
+
     host.el.appendChild(el('div', 'prompt', 'Which one says…'));
     host.el.appendChild(speakerButton(function () { Audio3.say(t); }));
 
     const grid = el('div', 'tiles tiles-' + opts.length);
     opts.forEach(function (c) {
-      const b = el('button', 'tile', c);
+      const b = el('button', 'tile', face(c));
       b.onclick = function () {
         if (host.locked) return;
         if (c === t) { b.classList.add('hit'); host.resolve(true); }
