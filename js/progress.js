@@ -29,8 +29,10 @@ const Progress = (function () {
   let p;
   try { p = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { p = null; }
   if (!p || p.version !== 1) {
-    p = { version: 1, level: 1, letters: {}, pairs: {}, sessions: 0, lastPlayed: null };
+    p = { version: 1, level: 1, letters: {}, pairs: {}, ear: 0,
+          sessions: 0, lastPlayed: null };
   }
+  if (typeof p.ear !== 'number') p.ear = 0;
 
   function save() { localStorage.setItem(KEY, JSON.stringify(p)); }
 
@@ -145,6 +147,58 @@ const Progress = (function () {
 
   function clearRecent() { recent.letter = []; recent.pair = []; recent.word = []; }
 
+  /* Blending by ear is one skill, not twenty-six, so it gets a single score
+     rather than a per-letter one. The score drives how much of the work the
+     child is asked to do:
+
+       0-4    hears one continuous stream, only has to recognise it
+       5-9    hears onset and rime, two pieces to hold
+       10+    hears three separate sounds and merges them
+
+     Deliberately slow to climb and quick to drop back. A child who has lost
+     the thread needs the easier rung immediately, not after five more misses. */
+  const EAR_MAX = 15;
+
+  function ear() { return p.ear; }
+  function earStage() { return Math.min(2, Math.floor(p.ear / 5)); }
+
+  function markEar(correct) {
+    p.ear = correct ? Math.min(EAR_MAX, p.ear + 1) : Math.max(0, p.ear - 2);
+    save();
+  }
+
+  /* Distractors only start sharing sounds with the answer once the child is
+     reliably blending. Before that, a rival that differs in one sound is not
+     a harder question, it is a different and unfair one. */
+  function earTier() {
+    if (p.ear < 5) return 'far';
+    if (p.ear < 10) return 'onset';
+    return 'inner';
+  }
+
+  function earChoices() { return p.ear < 3 ? 2 : 3; }
+
+  /* Pick a target that actually has enough rivals at the tier we want, rather
+     than picking a word first and discovering it has none. */
+  function pickHeard() {
+    const need = earChoices() - 1;
+    const tiers = [earTier(), 'onset', 'far'];
+    for (let i = 0; i < tiers.length; i++) {
+      const usable = DATA.HEARD.filter(function (h) {
+        return DATA.heardRivals(h.w, tiers[i]).length >= need;
+      });
+      if (usable.length >= 3) {
+        const pool = usable.map(function (h) { return h.w; });
+        const word = freshly('word', pool.length, function () {
+          return pool[Math.floor(Math.random() * pool.length)];
+        });
+        return { word: word, tier: tiers[i] };
+      }
+    }
+    const any = DATA.HEARD[Math.floor(Math.random() * DATA.HEARD.length)];
+    return { word: any.w, tier: 'far' };
+  }
+
   function startSession() { clearRecent(); p.sessions++; p.lastPlayed = new Date().toISOString(); save(); }
 
   function recordSession(mode, right, total) {
@@ -158,15 +212,18 @@ const Progress = (function () {
       return { letter: l, score: r.score, seen: r.seen, right: r.right,
                pairScore: q.score, active: activeLetters().indexOf(l) >= 0 };
     });
-    return { level: level(), sessions: p.sessions, last: p.last || null, letters: letters };
+    return { level: level(), sessions: p.sessions, last: p.last || null,
+             ear: p.ear, earStage: earStage(), letters: letters };
   }
 
   function reset() {
-    p = { version: 1, level: 1, letters: {}, pairs: {}, sessions: 0, lastPlayed: null };
+    p = { version: 1, level: 1, letters: {}, pairs: {}, ear: 0,
+          sessions: 0, lastPlayed: null };
     save();
   }
 
   return { score, pairScore, markLetter, markPair, level, checkUnlock,
            activeLetters, activeWords, pickLetter, pickPair, pickWord,
-           startSession, recordSession, summary, reset, MASTERED, MAX };
+           startSession, recordSession, summary, reset, MASTERED, MAX,
+           ear, earStage, markEar, earTier, earChoices, pickHeard, EAR_MAX };
 })();

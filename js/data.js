@@ -81,6 +81,65 @@ const DATA = (function () {
     tin:'🥫', rug:'🧶', cot:'🛏️', fin:'🐟', yes:'👍', wet:'💧', hop:'🐰'
   };
 
+  /* Words for blending by ear.
+
+     Deliberately NOT gated by level. Blending is a listening skill and it has
+     to run ahead of letter knowledge, not behind it -- a child who cannot
+     merge /m/ /a/ /t/ by ear will not manage it with print in the way, and
+     level 1 only has five words to practise on anyway.
+
+     Every entry is three phonemes, every letter is a single grapheme, and
+     every picture has to be unmistakable on its own and distinct from all the
+     others. That rules out plenty of otherwise fine words: "mud" and "red"
+     are colours rather than things, and can/tin/lid all want the same tin. */
+  const HEARD = [
+    { w: 'cat', pic: '🐱' }, { w: 'dog', pic: '🐕' }, { w: 'pig', pic: '🐷' },
+    { w: 'sun', pic: '☀️' }, { w: 'bus', pic: '🚌' }, { w: 'hat', pic: '🎩' },
+    { w: 'bed', pic: '🛏️' }, { w: 'jam', pic: '🍯' }, { w: 'bug', pic: '🐛' },
+    { w: 'log', pic: '🪵' }, { w: 'pen', pic: '🖊️' }, { w: 'fan', pic: '🪭' },
+    { w: 'map', pic: '🗺️' }, { w: 'pot', pic: '🍲' }, { w: 'nut', pic: '🌰' },
+    { w: 'net', pic: '🥅' }, { w: 'bag', pic: '👜' }, { w: 'van', pic: '🚐' },
+    { w: 'jet', pic: '✈️' }, { w: 'hen', pic: '🐔' }, { w: 'bat', pic: '🦇' },
+    { w: 'rat', pic: '🐀' }, { w: 'pup', pic: '🐶' }, { w: 'lip', pic: '👄' },
+    { w: 'zip', pic: '🤐' }, { w: 'kid', pic: '🧒' }, { w: 'man', pic: '👨' },
+    { w: 'ham', pic: '🍖' }, { w: 'pin', pic: '📌' }, { w: 'web', pic: '🕸️' },
+    { w: 'mop', pic: '🧹' }, { w: 'cup', pic: '🥤' },
+    /* These earn their place by completing minimal-pair families rather than
+       on their own merits: cat/cap/can, pen/pin/pan, hen/pen/ten, jam/ham/ram.
+       Without them the hardest tier has almost nothing to draw on. */
+    { w: 'pan', pic: '🍳' }, { w: 'cap', pic: '🧢' }, { w: 'ram', pic: '🐏' },
+    { w: 'ten', pic: '🔟' }, { w: 'can', pic: '🥫' }
+  ];
+
+  function heardPic(word) {
+    const hit = HEARD.filter(function (h) { return h.w === word; })[0];
+    return hit ? hit.pic : null;
+  }
+
+  /* Distractors for blending by ear, graded.
+
+     'far'   shares nothing -- a child can win on the first sound alone
+     'onset' differs only in the first sound (cat / bat / hat)
+     'inner' differs only in the vowel or the last sound (cat / cot / can)
+
+     The inner ones are what force real blending: guessing from the opening
+     sound gets you the wrong answer, so the whole word has to be held. */
+  function heardRivals(word, tier) {
+    const pool = HEARD.map(function (h) { return h.w; })
+                      .filter(function (w) { return w !== word && w.length === word.length; });
+    if (tier === 'far') {
+      return pool.filter(function (w) {
+        return w.split('').every(function (c, i) { return c !== word[i]; });
+      });
+    }
+    const diffAt = function (w, i) {
+      return w.split('').filter(function (c, j) { return c !== word[j]; }).length === 1
+          && w[i] !== word[i];
+    };
+    if (tier === 'onset') return pool.filter(function (w) { return diffAt(w, 0); });
+    return pool.filter(function (w) { return diffAt(w, 1) || diffAt(w, 2); });
+  }
+
   /* Every letter in teaching order, flattened. */
   const ORDER = LEVELS.reduce((a, l) => a.concat(l.letters), []);
 
@@ -95,5 +154,6 @@ const DATA = (function () {
   }
 
   return { PHONEME, LEVELS, SAME_SHAPE, CONFUSABLE, REWARD, ORDER,
+           HEARD, heardPic, heardRivals,
            lettersUpTo, wordsUpTo, MAX_LEVEL: LEVELS.length };
 })();
