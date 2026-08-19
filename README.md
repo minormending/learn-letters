@@ -21,7 +21,11 @@ Reading Wars* (2018).
 
 **Real recorded phonemes, never speech synthesis.** Every TTS voice reads `a`
 as the letter name "ay". Whole words are the one place TTS is accurate, so
-those use it, with a blended fallback and a switch to turn it off entirely.
+those use it — but never trusting it. Speech synthesis can refuse silently:
+no `onstart`, no `onerror`, no audio, which on a mode whose entire prompt is a
+spoken word means the child is asked to spell something they never heard. If
+it has not begun speaking within 700ms the app cancels it and plays the
+blended phonemes instead, so there is always something audible.
 
 **No schwa.** "muh-a-tuh" does not blend into "mat". The recordings are clipped
 consonants, and the app never appends a vowel.
@@ -37,6 +41,16 @@ confusable pairs are kept far apart — `d` arrives at level 2, `b` at level 5.
 
 **Two or three choices, never a wall of them.** Choice count scales with how
 solid the letter already is, and always drops to two after a miss.
+
+**Nothing repeats back to back.** Weighted random will cheerfully serve the
+same letter three times running, which reads as the game being stuck and
+wastes the interleaving. A short recency buffer sits in front of the picker;
+it does not disturb the mastery weighting, which still sends roughly 28 times
+more practice to shaky letters than solid ones.
+
+**Uppercase turns up once the pairs are solid.** Once a child can match a
+letter's two forms, the sound drill starts sometimes asking in uppercase.
+Otherwise the sound only ever gets attached to the lowercase shape.
 
 **Errors cost nothing.** No buzzer, no red, no lost points, no broken streak.
 A miss dims and steps back, the correct answer is modelled with audio, and the
@@ -61,6 +75,17 @@ is response cost.
 it, but speech recognition is unreliable on a five-year-old's voice, so the
 grown-up taps Got it / Not yet. That also puts an adult next to the child,
 which is what the early-literacy guidance actually favours at this age.
+
+## Known device quirks
+
+**The iPad's silent switch mutes Web Audio.** If the app is silent and the
+volume is up, check the physical mute switch or Control Centre. This is iOS
+behaviour for web audio and cannot be worked around from a web page.
+
+**Sleeping the iPad suspends the audio clock.** Handled — the app resumes the
+context when it returns to the foreground and on any touch. Worth knowing
+because the failure mode was invisible: audio died while the game carried on
+advancing normally.
 
 ## Modes
 
@@ -123,7 +148,10 @@ audio need an origin.
 ## Customising
 
 - **Words and levels** — `js/data.js`. Keep the rule that a level's words only
-  use letters from that level or earlier.
+  use letters from that level or earlier. 139 words across six levels, all
+  checked decodable at the level they appear. Words are chosen for being
+  things a five-year-old has a referent for, which rules out otherwise
+  perfectly decodable ones like "cog", "cud" and "nag".
 - **Reward pictures** — the `REWARD` map in `js/data.js`. Words with no entry
   just show a star.
 - **Session length / levels** — the grown-up panel, no code needed.
