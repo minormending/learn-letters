@@ -257,3 +257,7 @@ html, body {
 }
 
 .p-last { color: var(--muted); font-size: 1rem; margin: 0.2rem 0 0; }
+
+.p-bar + .p-bar { margin-top: 3px; }
+.p-fill-pair { background: #c9b79c; }
+.p-fill-pair.solid { background: var(--accent); opacity: 0.55; }
