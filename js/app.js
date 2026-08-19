@@ -1,0 +1,313 @@
+/* Session engine and screen routing.
+
+   The session has a fixed, visible endpoint rather than running forever.
+   Knowing how many are left is what makes stopping possible without a
+   fight, and finishing while they still want more is the goal. */
+
+const App = (function () {
+  const screens = {};
+  let current = null;
+  let session = null;
+  let sessionSeq = 0;
+
+  /* Tapping Back mid-question leaves timers in flight -- an audio promise, a
+     model-screen delay. Without a generation check those callbacks land in
+     whatever session started next and render the previous question into it. */
+  function alive(id) { return session && session.id === id && current === 'play'; }
+
+  function show(name) {
+    Object.keys(screens).forEach(function (k) {
+      screens[k].classList.toggle('on', k === name);
+    });
+    current = name;
+  }
+
+  function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+
+  /* ---------- home ---------- */
+  function buildHome() {
+    const grid = document.getElementById('mode-grid');
+    clear(grid);
+    MODE_ORDER.forEach(function (id) {
+      const m = MODES[id];
+      const card = el('button', 'mode-card');
+      card.appendChild(el('span', 'mode-emoji', m.emoji));
+      card.appendChild(el('span', 'mode-title', m.title));
+      card.appendChild(el('span', 'mode-sub', m.sub));
+      card.onclick = function () { start(id); };
+      grid.appendChild(card);
+    });
+    const lvl = Progress.level();
+    document.getElementById('home-level').textContent =
+      'Level ' + lvl + ' · ' + DATA.lettersUpTo(lvl).join(' ');
+  }
+
+  /* ---------- session ---------- */
+  function start(modeId) {
+    const mode = MODES[modeId];
+    session = {
+      id: ++sessionSeq,
+      mode: mode,
+      total: Settings.get('sessionLength'),
+      index: 0,
+      firstTry: 0,
+      results: []
+    };
+    Progress.startSession();
+    show('play');
+    nextItem();
+  }
+
+  function renderDots() {
+    const dots = document.getElementById('dots');
+    clear(dots);
+    for (let i = 0; i < session.total; i++) {
+      const d = el('span', 'dot');
+      if (i < session.index) d.classList.add('done');
+      if (i === session.index) d.classList.add('now');
+      dots.appendChild(d);
+    }
+    document.getElementById('left-count').textContent =
+      (session.total - session.index) + ' left';
+  }
+
+  function nextItem() {
+    if (!session) return;
+    if (session.index >= session.total) return finish();
+    renderDots();
+    const q = session.mode.make();
+    present(q, 0);
+  }
+
+  function present(q, attempt) {
+    const sid = session.id;
+    const stage = document.getElementById('stage');
+    clear(stage);
+    stage.classList.remove('celebrate');
+
+    const host = {
+      el: stage,
+      attempt: attempt,
+      locked: false,
+      resolve: function (correct, modelTarget) {
+        if (host.locked || !alive(sid)) return;
+        host.locked = true;
+        /* Only the first attempt moves mastery. Re-tries are for learning,
+           not for scoring -- a child should never be able to dig a hole. */
+        if (attempt === 0) session.mode.score(q, correct);
+        if (correct) onCorrect(q, attempt);
+        else onWrong(q, attempt, modelTarget);
+      },
+      /* Finish the item and move on even though it was not clean. Used where
+         the child has assembled the right answer after fumbling: making them
+         redo a word they just built correctly reads as punishment. */
+      finish: function (clean) {
+        if (host.locked || !alive(sid)) return;
+        host.locked = true;
+        if (attempt === 0) session.mode.score(q, clean);
+        onCorrect(q, clean ? attempt : 1);
+      }
+    };
+    session.mode.render(q, host);
+  }
+
+  function onCorrect(q, attempt) {
+    const sid = session.id;
+    Audio3.chime();
+    if (attempt === 0) session.firstTry++;
+    session.results.push(attempt === 0);
+
+    const stage = document.getElementById('stage');
+    stage.classList.add('celebrate');
+
+    /* The payoff -- including any picture -- lands only after the answer,
+       never beside the prompt. */
+    const reward = session.mode.reward && session.mode.reward(q);
+    const burst = el('div', 'burst', reward || '⭐');
+    stage.appendChild(burst);
+
+    session.index++;
+    setTimeout(function () { if (alive(sid)) nextItem(); }, reward ? 1100 : 620);
+  }
+
+  function onWrong(q, attempt, modelTarget) {
+    const sid = session.id;
+    Audio3.nudge();
+    const stage = document.getElementById('stage');
+    setTimeout(function () {
+      if (!alive(sid)) return;
+      clear(stage);
+      stage.classList.add('modelling');
+      const host = { el: stage };
+      const p = session.mode.model ? session.mode.model(q, host) : Promise.resolve();
+      Promise.resolve(p).then(function () {
+        setTimeout(function () {
+          if (!alive(sid)) return;
+          stage.classList.remove('modelling');
+          present(q, attempt + 1);
+        }, 700);
+      });
+    }, 420);
+  }
+
+  function finish() {
+    if (!session) return;
+    Audio3.fanfare();
+    const unlocked = Progress.checkUnlock();
+    show('done');
+    Progress.recordSession(session.mode.title, session.firstTry, session.total);
+
+    /* Stars earned only. A row of miss-marks and a "3 of 10" on the
+       celebration screen is a scoreboard, and a scoreboard is response cost:
+       it gives a child a number to be bad at. The grown-up panel keeps the
+       real figures. */
+    const stars = document.getElementById('done-stars');
+    clear(stars);
+    for (let i = 0; i < session.firstTry; i++) {
+      stars.appendChild(el('span', 'rstar', '⭐'));
+    }
+    if (session.firstTry === 0) stars.appendChild(el('span', 'rstar', '🎈'));
+
+    const note = document.getElementById('done-note');
+    if (unlocked) {
+      note.textContent = 'New letters unlocked: ' +
+        DATA.LEVELS[Progress.level() - 1].letters.join(' ');
+      note.classList.add('on');
+    } else {
+      note.classList.remove('on');
+    }
+    document.getElementById('again-btn').onclick = function () { start(session.mode.id); };
+  }
+
+  /* ---------- grown-up panel ---------- */
+  function buildParent() {
+    const s = Progress.summary();
+    document.getElementById('p-level').textContent = s.level;
+    document.getElementById('p-sessions').textContent = s.sessions;
+    const last = document.getElementById('p-last');
+    last.textContent = s.last
+      ? s.last.mode + ' — ' + s.last.right + ' of ' + s.last.total + ' first try'
+      : 'No sessions yet';
+
+    const grid = document.getElementById('p-letters');
+    clear(grid);
+    DATA.ORDER.forEach(function (l) {
+      const row = s.letters.filter(x => x.letter === l)[0];
+      const cell = el('div', 'p-cell' + (row.active ? '' : ' off'));
+      cell.appendChild(el('div', 'p-ch', l));
+      const bar = el('div', 'p-bar');
+      const fill = el('div', 'p-fill');
+      fill.style.width = (row.score / Progress.MAX * 100) + '%';
+      if (row.score >= Progress.MASTERED) fill.classList.add('solid');
+      bar.appendChild(fill);
+      cell.appendChild(bar);
+      grid.appendChild(cell);
+    });
+
+    const len = document.getElementById('p-length');
+    len.value = Settings.get('sessionLength');
+    len.oninput = function () {
+      Settings.set('sessionLength', parseInt(len.value, 10));
+      document.getElementById('p-length-val').textContent = len.value;
+    };
+    document.getElementById('p-length-val').textContent = len.value;
+
+    const lock = document.getElementById('p-level-pin');
+    clear(lock);
+    const auto = el('option', '', 'Auto (follow progress)');
+    auto.value = '0';
+    lock.appendChild(auto);
+    DATA.LEVELS.forEach(function (lv) {
+      const o = el('option', '', 'Level ' + lv.id + ' — ' + lv.letters.join(' '));
+      o.value = String(lv.id);
+      lock.appendChild(o);
+    });
+    lock.value = String(Settings.get('maxLevel'));
+    lock.onchange = function () {
+      Settings.set('maxLevel', parseInt(lock.value, 10));
+      buildHome();
+    };
+
+    const rw = document.getElementById('p-rewards');
+    rw.checked = Settings.get('rewards');
+    rw.onchange = function () { Settings.set('rewards', rw.checked); };
+
+    const bo = document.getElementById('p-blendonly');
+    bo.checked = Settings.get('blendOnly');
+    bo.onchange = function () { Settings.set('blendOnly', bo.checked); };
+  }
+
+  /* Press and hold to open, so a five-year-old does not wander in. */
+  function holdToOpen(node, ms, fn) {
+    let timer = null;
+    const down = function () {
+      node.classList.add('holding');
+      timer = setTimeout(function () { node.classList.remove('holding'); fn(); }, ms);
+    };
+    const up = function () {
+      node.classList.remove('holding');
+      if (timer) { clearTimeout(timer); timer = null; }
+    };
+    node.addEventListener('touchstart', down, { passive: true });
+    node.addEventListener('mousedown', down);
+    ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(function (e) {
+      node.addEventListener(e, up);
+    });
+  }
+
+  /* ---------- boot ---------- */
+  function init() {
+    ['start', 'home', 'play', 'done', 'parent'].forEach(function (n) {
+      screens[n] = document.getElementById('screen-' + n);
+    });
+
+    document.getElementById('start-btn').onclick = function () {
+      const btn = document.getElementById('start-btn');
+      btn.disabled = true;
+      btn.textContent = 'Getting ready…';
+      Audio3.unlock()
+        .then(function () { return Audio3.load(Audio3.allPhonemeFiles()); })
+        .then(function () {
+          buildHome();
+          show('home');
+        })
+        .catch(function (e) {
+          console.error(e);
+          btn.disabled = false;
+          btn.textContent = 'Tap to start';
+          document.getElementById('start-err').textContent =
+            'Could not load the sounds. Check your connection and try again.';
+        });
+    };
+
+    document.querySelectorAll('[data-home]').forEach(function (b) {
+      b.onclick = function () { session = null; buildHome(); show('home'); };
+    });
+    document.getElementById('p-close').onclick = function () { buildHome(); show('home'); };
+    document.getElementById('p-reset').onclick = function () {
+      if (confirm('Erase all progress and start from Level 1?')) {
+        Progress.reset(); buildParent(); buildHome();
+      }
+    };
+
+    holdToOpen(document.getElementById('home-title'), 1400, function () {
+      buildParent(); show('parent');
+    });
+
+    /* iPad: no double-tap zoom, no rubber-band scroll, no text selection. */
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('touchmove', function (e) {
+      if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
+  }
+
+  return { init: init };
+})();
+
+document.addEventListener('DOMContentLoaded', App.init);
