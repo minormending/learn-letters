@@ -41,6 +41,36 @@ function distractors(target, n, pool, useConfusable) {
   return out;
 }
 
+/* Only one sound sequence may run at a time.
+
+   Two overlapping playbacks are not merely untidy here: a child learning to
+   blend, who taps the button again because nothing seems to be happening,
+   would hear two words smeared over each other. That is worse than silence.
+   Registered buttons grey out while something is playing, so the wait is
+   visible rather than mysterious. */
+function makeLock() {
+  const st = { busy: false, btns: [] };
+  st.add = function (b) { st.btns.push(b); return b; };
+  st.run = function (fn) {
+    if (st.busy) return Promise.resolve();
+    st.busy = true;
+    st.btns.forEach(function (b) { b.disabled = true; });
+    const done = function () {
+      st.busy = false;
+      st.btns.forEach(function (b) { b.disabled = false; });
+    };
+    return Promise.resolve(fn()).then(done, done);
+  };
+  /* Guard without grey-out, for things that should stay looking tappable. */
+  st.quiet = function (fn) {
+    if (st.busy) return Promise.resolve();
+    st.busy = true;
+    const done = function () { st.busy = false; };
+    return Promise.resolve(fn()).then(done, done);
+  };
+  return st;
+}
+
 function speakerButton(onTap, label) {
   const b = el('button', 'speaker');
   b.setAttribute('aria-label', label || 'Play the sound again');
@@ -63,6 +93,109 @@ function graderRow(host, onYes, onNo) {
 }
 
 const MODES = {};
+
+
+/* ---------- 0. Blending by ear, with no letters at all ---------- */
+/* The prerequisite for Blend It. A child who cannot merge /m/ /a/ /t/ into a
+   word by ear will not manage it with print in the way -- asking them to do
+   both at once is two unlearned skills stacked on each other. There is
+   deliberately no text on this screen. Pictures are safe here precisely
+   because there is nothing written to guess from: the no-picture rule exists
+   to stop a child reading the image instead of the word, and there is no word
+   to read. */
+MODES.hear = {
+  id: 'hear', emoji: '🎧', title: 'Listen & Blend', sub: 'Hear the sounds, find it',
+
+  make: function () {
+    const pick = Progress.pickHeard();
+    const rivals = shuffle(DATA.heardRivals(pick.word, pick.tier));
+    const n = Progress.earChoices() - 1;
+    const opts = rivals.slice(0, n);
+    while (opts.length < n) {
+      const filler = shuffle(DATA.heardRivals(pick.word, 'far'))
+        .filter(function (w) { return opts.indexOf(w) < 0; })[0];
+      if (!filler) break;
+      opts.push(filler);
+    }
+    return { word: pick.word, tier: pick.tier,
+             opts: shuffle(opts.concat([pick.word])),
+             stage: Progress.earStage() };
+  },
+
+  score: function (q, ok) { Progress.markEar(ok); },
+
+  /* How much of the blending the child has to do. */
+  groups: function (word, stage) {
+    if (stage <= 0) return [[0, 1, 2]];            // one stream
+    if (stage === 1) return [[0], [1, 2]];         // onset and rime
+    return [[0], [1], [2]];                        // three sounds
+  },
+
+  render: function (q, host) {
+    const g = MODES.hear.groups(q.word, host.attempt > 0 ? q.stage - 1 : q.stage);
+    const gap = q.stage >= 2 ? 0.4 : 0.3;
+
+    const lock = makeLock();
+
+    host.el.appendChild(el('div', 'prompt', 'What word is it?'));
+
+    const play = function () { return lock.run(function () {
+      return Audio3.chunked(q.word, g, gap);
+    }); };
+    host.el.appendChild(lock.add(speakerButton(play, 'Hear the sounds again')));
+
+    const grid = el('div', 'pics pics-' + q.opts.length);
+    q.opts.forEach(function (w) {
+      const b = el('button', 'pic');
+      b.appendChild(el('span', 'pic-img', DATA.heardPic(w)));
+      b.setAttribute('aria-label', w);
+      b.onclick = function () {
+        if (host.locked) return;
+        if (w === q.word) { b.classList.add('hit'); host.resolve(true); }
+        else { b.classList.add('miss'); host.resolve(false, q.word); }
+      };
+      grid.appendChild(b);
+    });
+    host.el.appendChild(grid);
+
+    /* For a child who does not yet know what the task is, being shown the
+       whole operation once is worth more than any number of attempts at it. */
+    const showMe = lock.add(el('button', 'btn btn-soft btn-hint', 'Show me'));
+    showMe.onclick = function () {
+      if (host.locked) return;
+      host.helped = true;
+      lock.run(function () {
+        /* Sounds, then the same sounds run together, then the word, then a
+           nudge at the answer. The whole operation, start to finish. */
+        return Audio3.chunked(q.word, g, gap)
+          .then(function () { return Audio3.chunked(q.word, [[0, 1, 2]], 0); })
+          .then(function () { return Audio3.speakWord(q.word); })
+          .then(function () {
+            const right = [...grid.children][q.opts.indexOf(q.word)];
+            if (right) right.classList.add('reveal');
+          });
+      });
+    };
+    host.el.appendChild(showMe);
+
+    setTimeout(play, 320);
+  },
+
+  reward: function (q) { return DATA.heardPic(q.word); },
+
+  model: function (q, host) {
+    host.el.appendChild(el('div', 'prompt', 'It was…'));
+    host.el.appendChild(el('div', 'pic-big', DATA.heardPic(q.word)));
+    /* The separate sounds, then the very same sounds run together. Hearing
+       those two back to back is the entire idea, and it is the only thing
+       this screen is for. No spoken word after: where the device voice is
+       unavailable it just replays the blend, so it would say the same thing
+       twice and stretch a teaching moment into a wait. */
+    return Audio3.chunked(q.word, [[0], [1], [2]], 0.4)
+      .then(function () { return new Promise(function (r) { setTimeout(r, 250); }); })
+      .then(function () { return Audio3.chunked(q.word, [[0, 1, 2]], 0); });
+  }
+};
 
 /* ---------- 1. Hear a sound, find the letter ---------- */
 MODES.find = {
@@ -191,12 +324,16 @@ MODES.blend = {
     const w = q.word;
     host.el.appendChild(el('div', 'prompt', 'Sound it out, then say the word'));
 
+    const lock = makeLock();
+
     const row = el('div', 'word-row');
     const boxes = w.split('').map(function (c) {
       const b = el('button', 'wbox', c);
       b.onclick = function () {
-        b.classList.add('lit');
-        Audio3.say(c).then(function () { b.classList.remove('lit'); });
+        lock.quiet(function () {
+          b.classList.add('lit');
+          return Audio3.say(c).then(function () { b.classList.remove('lit'); });
+        });
       };
       row.appendChild(b);
       return b;
@@ -209,17 +346,52 @@ MODES.blend = {
     };
     const clear = function () { boxes.forEach(b => b.classList.remove('lit')); };
 
+    /* Light every box up to and including i, for the build-up. */
+    const lightUpTo = function (i) {
+      boxes.forEach(function (b, j) { b.classList.toggle('lit', j <= i); });
+    };
+
     const ctrls = el('div', 'ctrl-row');
-    const sep = el('button', 'btn btn-soft', 'Each sound');
-    sep.onclick = function () { Audio3.sound(w, 'separate', light).then(clear); };
-    const bl = el('button', 'btn btn-accent', 'Blend it →');
-    bl.onclick = function () {
-      row.classList.add('blending');
-      Audio3.sound(w, 'blend', light).then(function () {
-        clear(); row.classList.remove('blending');
+
+    const sep = lock.add(el('button', 'btn btn-soft', 'Each sound'));
+    sep.onclick = function () {
+      lock.run(function () { return Audio3.sound(w, 'separate', light).then(clear); });
+    };
+
+    /* Cumulative blending: /m/, then "ma", then "mat". The specific fix for a
+       child who can say all three sounds and still cannot say the word --
+       they are losing the front of it before they reach the end, so the front
+       gets rebuilt each time instead of being held. */
+    const step = lock.add(el('button', 'btn btn-soft', 'Bit by bit'));
+    step.onclick = function () {
+      lock.run(function () {
+        row.classList.add('blending');
+        let chain = Promise.resolve();
+        w.split('').forEach(function (_, i) {
+          chain = chain.then(function () {
+            lightUpTo(i);
+            const upto = [];
+            for (let j = 0; j <= i; j++) upto.push(j);
+            return Audio3.chunked(w, [upto], 0);
+          }).then(function () { return new Promise(function (r) { setTimeout(r, 260); }); });
+        });
+        return chain.then(function () {
+          clear(); row.classList.remove('blending');
+        });
       });
     };
-    ctrls.appendChild(sep); ctrls.appendChild(bl);
+
+    const bl = lock.add(el('button', 'btn btn-accent', 'Blend it →'));
+    bl.onclick = function () {
+      lock.run(function () {
+        row.classList.add('blending');
+        return Audio3.sound(w, 'blend', light).then(function () {
+          clear(); row.classList.remove('blending');
+        });
+      });
+    };
+
+    ctrls.appendChild(sep); ctrls.appendChild(step); ctrls.appendChild(bl);
     host.el.appendChild(ctrls);
 
     host.el.appendChild(graderRow(host,
@@ -227,7 +399,7 @@ MODES.blend = {
       function () { host.resolve(false, w); }));
 
     setTimeout(function () {
-      Audio3.sound(w, 'blend', light).then(clear);
+      lock.run(function () { return Audio3.sound(w, 'blend', light).then(clear); });
     }, 350);
   },
 
@@ -335,4 +507,5 @@ MODES.build = {
   }
 };
 
-const MODE_ORDER = ['find', 'say', 'match', 'blend', 'build'];
+/* Blending by ear comes before blending print, on purpose. */
+const MODE_ORDER = ['find', 'say', 'match', 'hear', 'blend', 'build'];

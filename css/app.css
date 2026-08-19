@@ -399,3 +399,33 @@ html, body {
   font-family: var(--ui);
 }
 .p-note { line-height: 1.55; }
+
+/* ---------- Listen & Blend: pictures, no print ---------- */
+.pics { display: flex; gap: clamp(0.8rem, 3vw, 1.8rem); flex-wrap: wrap; justify-content: center; }
+.pic {
+  width: clamp(120px, 22vw, 190px); height: clamp(120px, 22vw, 190px);
+  background: var(--surface); border: 3px solid var(--line); border-radius: 26px;
+  display: grid; place-items: center; cursor: pointer;
+  transition: transform 0.09s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.pic:active { transform: scale(0.95); }
+.pic-img { font-size: clamp(3.2rem, 11vw, 5.4rem); line-height: 1; }
+.pic.hit { background: var(--yes); border-color: var(--yes); }
+.pic.miss { opacity: 0.4; transform: scale(0.92); border-color: var(--line); }
+/* Show me points at the answer rather than just saying it again. */
+.pic.reveal { border-color: var(--warm); animation: point 0.7s ease-in-out 2; }
+@keyframes point {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.pic-big { font-size: clamp(5rem, 20vh, 9rem); line-height: 1; }
+
+/* "Start here" cue on the mode that should come first. */
+.mode-card { position: relative; }
+.mode-flag {
+  position: absolute; top: -9px; left: 14px;
+  background: var(--warm); color: #fff;
+  font-family: var(--ui); font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.25em 0.7em; border-radius: 999px;
+}

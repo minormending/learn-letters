@@ -37,6 +37,13 @@ const App = (function () {
       card.onclick = function () { launch(id); };
 
       /* Coaching is a tap away rather than in the child's face. */
+      /* Point a parent at blending-by-ear while it is still shaky. Blend It
+         in front of a child who cannot blend by ear yet is the fastest way to
+         convince them they cannot read. */
+      if (id === 'hear' && Progress.ear() < Progress.EAR_MAX * 0.6) {
+        card.appendChild(el('span', 'mode-flag', 'Start here'));
+      }
+
       const help = el('button', 'mode-help', '?');
       help.setAttribute('aria-label', 'Parent guide for ' + m.title);
       help.onclick = function (e) { e.stopPropagation(); markGuideSeen(id); openGuide(id, id); };
