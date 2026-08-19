@@ -24,29 +24,29 @@ const DATA = (function () {
 
     { id: 2, letters: ['i','n','m','d'],
       words: ['it','in','am','an','sit','sip','sad','pin','pit','pan','pad',
-              'tin','tip','tan','nip','nap','man','mat','map','mad','mid',
-              'dip','dim','did','dad'] },
+ 'tin','tip','tan','nip','nap','man','mat','map','mad',
+ 'dip','dim','did','dad'] },
 
     { id: 3, letters: ['g','o','c','k'],
-      words: ['on','got','gap','gas','dog','cog','cot','cop','cod','can',
-              'cap','cat','kid','kit','top','pot','pop','pod','not','nod',
-              'nag','mop','dot','tag','pig','dig'] },
+      words: ['on','got','gap','gas','dog','cot','cop','can',
+ 'cap','cat','kid','kit','top','pot','pop','not','nod',
+ 'mop','dot','tag','pig','dig'] },
 
     { id: 4, letters: ['e','u','r'],
       words: ['up','us','get','pet','pen','ten','den','men','met','set',
-              'net','peg','red','rat','rap','rim','rid','run','rug','rot',
-              'cup','cut','mud','sun','nut','gum','pup','tug','dug','mug'] },
+ 'net','peg','red','rat','rap','rim','run','rug',
+ 'cup','cut','mud','sun','nut','gum','pup','tug','dug','mug'] },
 
     { id: 5, letters: ['h','b','f','l'],
       words: ['hat','ham','had','hit','hip','hop','hot','hug','hen','bat',
-              'bad','bag','bed','beg','bet','big','bin','bit','bug','bun',
-              'but','fan','fat','fit','fig','fin','fun','fed','fog','lap',
-              'leg','let','lid','lip','lit','log','lot','lug'] },
+ 'bad','bag','bed','beg','bet','big','bin','bit','bug','bun',
+ 'but','fan','fat','fit','fig','fin','fun','fed','fog','lap',
+ 'leg','let','lid','lip','lit','log','lot'] },
 
     { id: 6, letters: ['j','v','w','y','z','q','x'],
       words: ['jam','jet','jog','job','jug','van','vet','wag','web','wet',
-              'win','wig','yes','yet','yap','zip','zap','box','fox','six',
-              'fix','mix','wax','ox'] }
+ 'win','wig','yes','yet','zip','zap','box','fox','six',
+ 'fix','mix','wax','ox'] }
   ];
 
   /* Uppercase/lowercase pairs where the two forms are essentially the same
