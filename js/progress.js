@@ -32,6 +32,29 @@ const Progress = (function () {
 
   function save() { localStorage.setItem(KEY, JSON.stringify(p)); }
 
+  /* Recently-served items, per run rather than persisted. Weighted random
+     will happily serve the same letter three times running, which reads as
+     the game being stuck and wastes the interleaving. Keeps the buffer well
+     under the pool size so small early pools do not deadlock. */
+  const recent = { letter: [], pair: [], word: [] };
+
+  function noteRecent(kind, value, poolSize) {
+    const keep = Math.max(0, Math.min(3, poolSize - 2));
+    const list = recent[kind];
+    list.push(value);
+    while (list.length > keep) list.shift();
+  }
+
+  function freshly(kind, poolSize, draw) {
+    for (let i = 0; i < 12; i++) {
+      const v = draw();
+      if (recent[kind].indexOf(v) < 0) { noteRecent(kind, v, poolSize); return v; }
+    }
+    const v = draw();
+    noteRecent(kind, v, poolSize);
+    return v;
+  }
+
   function rec(map, key) {
     if (!map[key]) map[key] = { seen: 0, right: 0, score: 0 };
     return map[key];
@@ -72,8 +95,14 @@ const Progress = (function () {
 
   /* Weighted pick: shaky letters come up more, but solid ones still appear
      so practice stays interleaved rather than blocked. */
-  function pickLetter(scoreFn, pool) {
+  function pickLetter(scoreFn, pool, kind) {
     const list = pool || activeLetters();
+    return freshly(kind || 'letter', list.length, function () {
+      return drawLetter(scoreFn, list);
+    });
+  }
+
+  function drawLetter(scoreFn, list) {
     const weights = list.map(function (l) {
       const s = scoreFn ? scoreFn(l) : score(l);
       return Math.pow(MAX + 1 - s, 2);   // score 0 -> 36, score 5 -> 1
@@ -93,10 +122,28 @@ const Progress = (function () {
     return pickLetter(function (l) {
       const base = pairScore(l);
       return DATA.SAME_SHAPE.indexOf(l) >= 0 ? Math.min(MAX, base + 2) : base;
-    }, pool);
+    }, pool, 'pair');
   }
 
-  function startSession() { p.sessions++; p.lastPlayed = new Date().toISOString(); save(); }
+  /* Words are weighted by how shaky their letters are, so practice lands on
+     what the child is actually struggling with rather than on random words. */
+  function pickWord(words) {
+    return freshly('word', words.length, function () {
+      const w = words.map(function (word) {
+        let t = 0;
+        word.split('').forEach(function (c) { t += (MAX + 1 - score(c)); });
+        return t / word.length;
+      });
+      const total = w.reduce((a, b) => a + b, 0);
+      let r = Math.random() * total;
+      for (let i = 0; i < words.length; i++) { r -= w[i]; if (r <= 0) return words[i]; }
+      return words[words.length - 1];
+    });
+  }
+
+  function clearRecent() { recent.letter = []; recent.pair = []; recent.word = []; }
+
+  function startSession() { clearRecent(); p.sessions++; p.lastPlayed = new Date().toISOString(); save(); }
 
   function recordSession(mode, right, total) {
     p.last = { mode: mode, right: right, total: total };
@@ -118,6 +165,6 @@ const Progress = (function () {
   }
 
   return { score, pairScore, markLetter, markPair, level, checkUnlock,
-           activeLetters, activeWords, pickLetter, pickPair,
+           activeLetters, activeWords, pickLetter, pickPair, pickWord,
            startSession, recordSession, summary, reset, MASTERED, MAX };
 })();

@@ -62,18 +62,6 @@ function graderRow(host, onYes, onNo) {
   return row;
 }
 
-function weightedWord(words) {
-  const w = words.map(function (word) {
-    let s = 0;
-    word.split('').forEach(function (c) { s += (Progress.MAX + 1 - Progress.score(c)); });
-    return s / word.length;
-  });
-  const total = w.reduce((a, b) => a + b, 0);
-  let r = Math.random() * total;
-  for (let i = 0; i < words.length; i++) { r -= w[i]; if (r <= 0) return words[i]; }
-  return words[words.length - 1];
-}
-
 const MODES = {};
 
 /* ---------- 1. Hear a sound, find the letter ---------- */
@@ -187,7 +175,7 @@ MODES.match = {
 /* ---------- 4. Blend the sounds into a word ---------- */
 MODES.blend = {
   id: 'blend', emoji: '🌊', title: 'Blend It', sub: 'Slide the sounds together',
-  make: function () { return { word: weightedWord(Progress.activeWords()) }; },
+  make: function () { return { word: Progress.pickWord(Progress.activeWords()) }; },
   score: function (q, ok) {
     q.word.split('').forEach(function (c) { Progress.markLetter(c, ok); });
   },
@@ -250,7 +238,7 @@ MODES.blend = {
 /* ---------- 5. Hear a word, build it ---------- */
 MODES.build = {
   id: 'build', emoji: '🧱', title: 'Build It', sub: 'Spell what you hear',
-  make: function () { return { word: weightedWord(Progress.activeWords()) }; },
+  make: function () { return { word: Progress.pickWord(Progress.activeWords()) }; },
   score: function (q, ok) {
     q.word.split('').forEach(function (c) { Progress.markLetter(c, ok); });
   },
