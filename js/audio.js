@@ -15,6 +15,10 @@ const Audio3 = (function () {
   const buffers = {};   // name -> AudioBuffer
   const trims   = {};   // name -> {start, end} seconds of actual sound
   let unlocked  = false;
+  /* null = not tried, true = speaks, false = refuses silently.
+     Once a voice has refused there is no point paying the 700ms detection
+     wait on every later word -- go straight to the blended fallback. */
+  let ttsWorks  = null;
 
   /* Clips carry a little leading/trailing silence. For blending we need to
      know where the sound really starts and stops, otherwise the gaps creep
@@ -152,11 +156,49 @@ const Audio3 = (function () {
     return wait(t - ctx.currentTime + 0.1);
   }
 
+  /* Play a word as arbitrary groups of sounds, each group run together and a
+     gap between groups. This is the ladder that makes blending learnable:
+
+       [[0,1,2]]        "mmmaaat"      one stream, nothing to hold
+       [[0],[1,2]]      /m/ .. "at"    onset and rime, two pieces
+       [[0],[1],[2]]    /m/ /a/ /t/    three pieces, the real thing
+       [[0,1],[2]]      "ma" .. /t/    build up two, then add the last
+
+     Three separate sounds is where a struggling child loses the word, so the
+     app has to be able to ask for less than that. */
+  function chunked(word, groups, gap, onGroup) {
+    return ensureRunning().then(function () {
+      const letters = word.split('');
+      let t = ctx.currentTime + 0.08;
+      const marks = [];
+
+      groups.forEach(function (g, gi) {
+        marks.push({ gi: gi, at: t });
+        g.forEach(function (idx) {
+          const ch = letters[idx];
+          if (!ch) return;
+          const names = DATA.PHONEME[ch] || [ch];
+          const rate = 'mnslfrvz'.indexOf(ch) >= 0 ? 0.9 : 1;
+          names.forEach(function (n) { t = schedule(n, t, rate); });
+        });
+        if (gi < groups.length - 1) t += gap;
+      });
+
+      if (onGroup) {
+        marks.forEach(function (m) {
+          setTimeout(function () { onGroup(m.gi); },
+                     (m.at - ctx.currentTime) * 1000);
+        });
+      }
+      return wait(t - ctx.currentTime + 0.1);
+    });
+  }
+
   /* Whole words are the one case where speech synthesis is accurate --
      it says "mat" correctly, it just cannot say /m/. Falls back to a fast
      blend if no voice is available. */
   function speakWord(word) {
-    if (!window.speechSynthesis || Settings.get('blendOnly')) {
+    if (!window.speechSynthesis || Settings.get('blendOnly') || ttsWorks === false) {
       return sound(word, 'blend');
     }
     return new Promise(function (res) {
@@ -177,7 +219,7 @@ const Audio3 = (function () {
       u.pitch = 1.05;
       const uk = speechSynthesis.getVoices().filter(v => /en-GB/i.test(v.lang));
       if (uk.length) u.voice = uk[0];
-      u.onstart = function () { started = true; };
+      u.onstart = function () { started = true; ttsWorks = true; };
       u.onend = finish;
       u.onerror = fallback;
 
@@ -190,7 +232,9 @@ const Audio3 = (function () {
          audio. It happens on iOS outside a user gesture, and it is what makes
          a mode whose whole prompt is a spoken word play nothing at all. If it
          has not begun shortly after being asked, it is not going to. */
-      setTimeout(function () { if (!started) fallback(); }, 700);
+      setTimeout(function () {
+        if (!started) { ttsWorks = false; fallback(); }
+      }, 700);
       /* And if it starts but never reports finishing, do not hang the item. */
       setTimeout(function () { if (started) finish(); }, 3500);
     });
@@ -227,7 +271,7 @@ const Audio3 = (function () {
     return Object.keys(set);
   }
 
-  return { unlock, load, say, sayName, sound, speakWord, ensureRunning,
+  return { unlock, load, say, sayName, sound, chunked, speakWord, ensureRunning,
            chime, nudge, fanfare, allPhonemeFiles,
            get ready() { return unlocked; } };
 })();
