@@ -29,6 +29,26 @@ const GUIDES = {
     ]
   },
 
+  hear: {
+    emoji: '🎧',
+    title: 'Listen & Blend',
+    lead: 'Blending with no letters at all — just the ear. If blending is not clicking, this is the game to be on, and the others can wait.',
+    sections: [
+      { kind: 'do', head: 'Why there is nothing written on the screen',
+        body: 'Blending and reading print are two different skills, and Blend It asks for both at once. If a child cannot yet push /m/ /a/ /t/ together into a word when they simply hear it, putting letters in front of them makes it harder, not clearer. This game strips the print away so there is only one thing to learn.' },
+      { kind: 'say', head: 'Say this',
+        body: '“Listen… what word?” Then wait. Give them a good few seconds — the sounds have to be held in their head while they work, and filling the silence takes the work away.' },
+      { kind: 'do', head: 'It gets harder in the right order',
+        body: 'At first they hear the whole word run together as one stream — “mmmaaat” — and only have to recognise it. Then it splits into two pieces, /m/ and “at”. Only then does it become three separate sounds. Most children who cannot manage three can manage two, and that middle rung is the one usually missing.' },
+      { kind: 'watch', head: 'Guessing from the first sound',
+        body: 'Early on the wrong answers are completely different words, so /m/ alone is enough to win. Once they are reliable, the wrong answers start being things like “cap” and “can” next to “cat” — then the first sound will not save them and the whole word has to be held. If they suddenly start missing, that is why, and it is the point.' },
+      { kind: 'tip', head: 'Press “Show me” without guilt',
+        body: 'It plays the sounds, runs them together, says the word and points at the answer. For a child who does not yet know what the task even is, being shown the whole thing once teaches more than ten attempts at guessing it.' },
+      { kind: 'avoid', head: 'Don’t move on too early',
+        body: 'This is worth staying on for days rather than minutes. Blending by ear is the single thing standing between him and reading words, and time spent here is not time away from reading — it is the thing that makes reading possible.' }
+    ]
+  },
+
   find: {
     emoji: '👂',
     title: 'Find the Letter',
@@ -82,10 +102,14 @@ const GUIDES = {
   blend: {
     emoji: '🌊',
     title: 'Blend It',
-    lead: 'Sounding out a word and pushing the sounds together. This is the one that matters most.',
+    lead: 'Sounding out a written word. Blending by ear comes first — if that is still shaky, spend your time in Listen & Blend instead.',
     sections: [
+      { kind: 'watch', head: 'If they are lost here, go back a step',
+        body: 'This game asks for two things at once: turning letters into sounds, and pushing those sounds into a word. If the second one is not there yet, this will feel impossible and no amount of practice on it will fix that. Listen & Blend teaches the same skill with the print taken away. Come back to this one after.' },
       { kind: 'say', head: 'Say this',
         body: '“Sound it out… now say it fast.”' },
+      { kind: 'do', head: 'Bit by bit is the button to reach for',
+        body: 'It builds the word up instead of laying it out: /m/, then “ma”, then “mat”. If a child can say all three sounds and still cannot say the word, this is almost always why — they are losing the front of it before they get to the end. Rebuilding from the start each time keeps it in reach.' },
       { kind: 'avoid', head: 'Never pause between the sounds',
         body: '“/m/ … /a/ … /t/” with gaps is exactly where a child loses the word — by the third sound the first one is gone. Slide them together instead: “mmmaaat”. The Blend it button does this properly, with no gaps at all. Copy how it sounds.' },
       { kind: 'do', head: 'When they are stuck: I do it, we do it, you do it',
@@ -114,7 +138,7 @@ const GUIDES = {
   }
 };
 
-const GUIDE_ORDER = ['start', 'find', 'say', 'match', 'blend', 'build'];
+const GUIDE_ORDER = ['start', 'hear', 'find', 'say', 'match', 'blend', 'build'];
 
 const GUIDE_KIND = {
   say:   { label: 'Say this',  icon: '💬' },

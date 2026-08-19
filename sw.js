@@ -1,6 +1,6 @@
 /* Offline cache. The whole app is ~700KB, so precache all of it: this is
    for a five-year-old in a car, not a page that needs to be clever. */
-const CACHE = 'letter-sounds-v3';
+const CACHE = 'letter-sounds-v4';
 
 const ASSETS = [
   './',
