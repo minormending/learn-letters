@@ -201,8 +201,8 @@ a counter that overrides the merge everywhere, and the confirmation says which
 code it is about to clear across. Joining a device to an existing code is never
 destructive, however many times that code has been reset.
 
-The `sync/` folder is vendored rather than written here: its canonical copy lives
-in the sibling `kidsync` repo, shared with the other games. Edit it there and run
+The `sync/` folder is vendored rather than written here: its canonical copy is
+[minormending/kidsync](https://github.com/minormending/kidsync), shared with the other games. Edit it there and run
 `kidsync/tools/install`, which also reminds you to bump `CACHE` in `sw.js`;
 `kidsync/tools/check` fails if a copy has drifted. What belongs to *this* app is
 `js/sync-state.js` — the scores-can-fall merge above — and the panel section.
