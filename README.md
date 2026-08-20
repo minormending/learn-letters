@@ -215,7 +215,7 @@ gets a full session.
 Sharing has no accounts. Each device signs in anonymously so that unauthenticated
 access is refused and every write is attributable, but anyone can obtain an
 anonymous session, so that is not a privacy boundary: the room code is. Roughly
-2.1 billion of them. Fine for letter scores, which is exactly why nothing else is
+two billion of them. Fine for letter scores, which is exactly why nothing else is
 in there. `sync/RULES-EXPLAINED.md` goes through the database rules line by line.
 
 ## Levels
