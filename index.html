@@ -60,7 +60,7 @@
 
 <!-- Parent-facing. Deliberately a different visual language from the child
      screens: denser, system typeface, real hierarchy. -->
-<section id="screen-guide" class="screen">
+<section id="screen-guide" class="screen grownup">
   <div class="guide-wrap">
     <article class="guide">
       <header class="guide-head">
@@ -75,90 +75,114 @@
     </article>
   </div>
   <footer class="guide-foot">
-    <button id="g-back" class="btn btn-soft">Back</button>
-    <button id="g-go" class="btn btn-accent">Start playing</button>
+    <button id="g-back" class="btn btn--quiet">Back</button>
+    <button id="g-go" class="btn btn--go">Start playing</button>
   </footer>
 </section>
 
-<section id="screen-parent" class="screen">
-  <div class="pad scroll">
-    <h2 class="p-h">Grown-up settings</h2>
+<section id="screen-parent" class="screen grownup">
+  <div class="gu-sheet">
 
-    <div class="p-stats">
-      <div><span class="p-num" id="p-level">1</span><span class="p-lab">level</span></div>
-      <div><span class="p-num" id="p-sessions">0</span><span class="p-lab">sessions</span></div>
-    </div>
-    <p class="p-last">Last: <span id="p-last">No sessions yet</span></p>
+    <header class="gu-head">
+      <h1>Grown-up settings</h1>
+      <button class="btn btn--plain" id="p-close">Done</button>
+    </header>
 
-    <h3 class="p-sub">Letter mastery</h3>
-    <p class="p-note">Teaching order, not alphabetical. Greyed letters are not
-      introduced yet. Top bar is the letter's sound, bottom bar is big/little
-      matching. A full bar means it is solid; only the sound bar advances the
-      level.</p>
-    <div id="p-letters" class="p-letters"></div>
-
-    <h3 class="p-sub">Session length</h3>
-    <p class="p-note">Shorter is usually better. Ending while they still want
-      more is the goal.</p>
-    <label class="p-row">
-      <input type="range" id="p-length" min="4" max="20" step="1">
-      <span id="p-length-val" class="p-val"></span>
-    </label>
-
-    <h3 class="p-sub">Level</h3>
-    <p class="p-note">Auto advances when every letter in the level is solid.
-      Pin a level to stay put or to revisit.</p>
-    <select id="p-level-pin" class="p-select"></select>
-
-    <h3 class="p-sub">Coaching guides</h3>
-    <p class="p-note">What to say, what to listen for, and the handful of
-      things worth not doing. Also on the “?” beside each game.</p>
-    <div id="p-guides" class="p-guides"></div>
-
-    <h3 class="p-sub">Options</h3>
-    <label class="p-check"><input type="checkbox" id="p-guidefirst">
-      <span>Show the guide before a game you haven’t played yet</span></label>
-    <label class="p-check"><input type="checkbox" id="p-rewards">
-      <span>Picture reward after a correct word</span></label>
-    <label class="p-check"><input type="checkbox" id="p-blendonly">
-      <span>Never use the device voice (blended sounds only)</span></label>
-
-    <h3 class="p-sub">Two devices at once</h3>
-    <p class="p-note">Keeps progress in step as you go, so ten minutes on the iPad and
-      ten on your phone add up to one record instead of two. Letter and matching scores,
-      the level, blending-by-ear, and these settings all travel.</p>
-    <p class="p-note">Nothing about your child does. There are no names, no recordings and
-      no words typed by anyone in here &mdash; only which sounds are solid and which need
-      more practice.</p>
-    <p class="p-note" id="p-sync-state"></p>
-
-    <div class="p-sync-row" id="p-sync-off" hidden>
-      <button id="p-sync-start" class="btn btn-accent">Start sharing</button>
-      <button id="p-sync-join" class="btn btn-soft">Enter a code</button>
-    </div>
-
-    <div class="p-sync-row" id="p-sync-on" hidden>
-      <code class="p-code" id="p-sync-code"></code>
-      <button id="p-sync-stop" class="btn btn-soft">Stop sharing here</button>
-    </div>
-
-    <div id="p-sync-join-box" hidden>
-      <p class="p-note">Type the code shown on the other device. Connecting merges the
-        two records &mdash; a letter is kept at whichever device practised it most
-        recently, so nothing is lost either way.</p>
-      <input class="p-input" id="p-sync-input" type="text" placeholder="WORD-WORD-WORD-123"
-             autocomplete="off" autocapitalize="characters" spellcheck="false">
-      <div class="p-sync-row">
-        <button id="p-sync-go" class="btn btn-accent">Connect</button>
-        <button id="p-sync-cancel" class="btn btn-soft">Cancel</button>
+    <section class="block">
+      <h2>Where they are</h2>
+      <div class="p-stats">
+        <div><span class="p-num" id="p-level">1</span><span class="p-lab">level</span></div>
+        <div><span class="p-num" id="p-sessions">0</span><span class="p-lab">sessions</span></div>
       </div>
-      <p class="p-note" id="p-sync-msg" hidden></p>
-    </div>
+      <p class="stat">Last: <span id="p-last">No sessions yet</span></p>
+    </section>
 
-    <div class="p-actions">
-      <button id="p-reset" class="btn btn-warn">Reset progress</button>
-      <button id="p-close" class="btn btn-accent">Done</button>
-    </div>
+    <section class="block">
+      <h2>Letter mastery</h2>
+      <p class="hint">Teaching order, not alphabetical. Greyed letters are not
+        introduced yet. Top bar is the letter&rsquo;s sound, bottom bar is big/little
+        matching. A full bar means it is solid; only the sound bar advances the
+        level.</p>
+      <div id="p-letters" class="p-letters"></div>
+    </section>
+
+    <section class="block">
+      <h2>Session length</h2>
+      <p class="hint">Shorter is usually better. Ending while they still want
+        more is the goal.</p>
+      <label class="field">
+        <span>Questions in a session: <b id="p-length-val"></b></span>
+        <input type="range" id="p-length" min="4" max="20" step="1">
+      </label>
+    </section>
+
+    <section class="block">
+      <h2>Level</h2>
+      <p class="hint">Auto advances when every letter in the level is solid.
+        Pin a level to stay put or to revisit.</p>
+      <select id="p-level-pin" class="select"></select>
+    </section>
+
+    <section class="block">
+      <h2>Coaching guides</h2>
+      <p class="hint">What to say, what to listen for, and the handful of
+        things worth not doing. Also on the &ldquo;?&rdquo; beside each game.</p>
+      <div id="p-guides" class="p-guides"></div>
+    </section>
+
+    <section class="block">
+      <h2>Options</h2>
+      <label class="check"><input type="checkbox" id="p-guidefirst">
+        <span>Show the guide before a game you haven&rsquo;t played yet</span></label>
+      <label class="check"><input type="checkbox" id="p-rewards">
+        <span>Picture reward after a correct word</span></label>
+      <label class="check"><input type="checkbox" id="p-blendonly">
+        <span>Never use the device voice (blended sounds only)</span></label>
+    </section>
+
+    <section class="block">
+      <h2>Two devices at once</h2>
+      <p class="hint">Keeps progress in step as you go, so ten minutes on the iPad and
+        ten on your phone add up to one record instead of two. Letter and matching scores,
+        the level, blending-by-ear, and these settings all travel.</p>
+      <p class="hint">Nothing about your child does. There are no names, no recordings and
+        no words typed by anyone in here &mdash; only which sounds are solid and which need
+        more practice.</p>
+      <p class="stat" id="p-sync-state"></p>
+
+      <div class="btn-row" id="p-sync-off" hidden>
+        <button id="p-sync-start" class="btn btn--go">Start sharing</button>
+        <button id="p-sync-join" class="btn btn--quiet">Enter a code</button>
+      </div>
+
+      <div class="btn-row" id="p-sync-on" hidden>
+        <code class="sync-code" id="p-sync-code"></code>
+        <button id="p-sync-stop" class="btn btn--quiet">Stop sharing here</button>
+      </div>
+
+      <div id="p-sync-join-box" hidden>
+        <p class="hint">Type the code shown on the other device. Connecting merges the
+          two records &mdash; a letter is kept at whichever device practised it most
+          recently, so nothing is lost either way.</p>
+        <input class="input input--code" id="p-sync-input" type="text" placeholder="WORD-WORD-WORD-123"
+               autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <div class="btn-row">
+          <button id="p-sync-go" class="btn btn--go">Connect</button>
+          <button id="p-sync-cancel" class="btn btn--quiet">Cancel</button>
+        </div>
+        <p class="hint" id="p-sync-msg" hidden></p>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Starting over</h2>
+      <p class="hint">Clears every letter score, the level and the session count on this
+        device. There is no undo.</p>
+      <div class="btn-row">
+        <button id="p-reset" class="btn btn--danger">Reset progress</button>
+      </div>
+    </section>
+
   </div>
 </section>
 

@@ -58,10 +58,6 @@ html, body {
   align-items: center; justify-content: center;
   gap: 1.1rem; padding: 4vh 5vw; text-align: center;
 }
-.pad.scroll { justify-content: flex-start; align-items: stretch;
-              overflow-y: auto; -webkit-overflow-scrolling: touch;
-              text-align: left; max-width: 720px; margin: 0 auto; width: 100%; }
-
 /* ---------- type ---------- */
 .brand   { font-size: clamp(2rem, 6vw, 3.4rem); margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 .lede    { color: var(--muted); font-size: clamp(1rem, 2.4vw, 1.35rem); margin: 0; }
@@ -223,50 +219,29 @@ html, body {
 .unlock-note.on { display: block; }
 
 /* ---------- grown-up panel ---------- */
-.p-h   { font-size: 1.7rem; margin: 0.6rem 0 0.2rem; }
-.p-sub { font-size: 1.15rem; margin: 1.6rem 0 0.2rem; }
-.p-note{ color: var(--muted); font-size: 0.95rem; margin: 0 0 0.7rem; line-height: 1.45; max-width: 62ch; }
-.p-stats { display: flex; gap: 2.4rem; margin: 0.6rem 0 0.4rem; }
-.p-num { font-size: 2.2rem; font-weight: 700; display: block; line-height: 1; }
-.p-lab { color: var(--muted); font-size: 0.9rem; }
-.p-letters { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
-             gap: 0.55rem; max-width: 620px; }
-.p-cell { text-align: center; }
-.p-cell.off { opacity: 0.3; }
-.p-ch  { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
-.p-bar { height: 7px; background: var(--line); border-radius: 4px; overflow: hidden; }
-.p-fill{ height: 100%; background: var(--warm); border-radius: 4px; transition: width 0.3s ease; }
-.p-fill.solid { background: var(--accent); }
-.p-row { display: flex; align-items: center; gap: 1rem; max-width: 420px; }
-.p-row input[type=range] { flex: 1; height: 40px; }
-.p-val { font-size: 1.3rem; font-weight: 700; min-width: 2ch; }
-.p-select {
-  font-family: inherit; font-size: 1.05rem; padding: 0.7em 1em;
-  border-radius: 14px; border: 2px solid var(--line);
-  background: var(--surface); color: var(--ink); max-width: 420px; width: 100%;
-}
-.p-check { display: flex; align-items: center; gap: 0.8rem; margin: 0.6rem 0;
-           font-size: 1.05rem; cursor: pointer; }
-.p-check input { width: 26px; height: 26px; }
-.p-actions { display: flex; gap: 1rem; margin: 2.2rem 0 3rem; flex-wrap: wrap; }
 
-/* Sharing. The [hidden] rules are load-bearing: display:flex beats the hidden
-   attribute, and without them both button rows render at once. */
-.p-sync-row { display: flex; gap: 1rem; margin: 0.7rem 0; flex-wrap: wrap; align-items: center; }
-.p-sync-row[hidden] { display: none; }
-.p-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 1.05rem; font-weight: 700; letter-spacing: 0.02em;
-  padding: 0.6rem 0.8rem; border-radius: 12px;
-  background: var(--soft); color: var(--ink); word-break: break-all;
-}
-.p-input {
-  font-family: inherit; font-size: 1.05rem; padding: 0.7em 1em;
-  border-radius: 14px; border: 2px solid var(--line);
-  background: var(--surface); color: var(--ink);
-  max-width: 420px; width: 100%; box-sizing: border-box;
-  text-transform: uppercase;
-}
+/* The sheet, the cards, the buttons and the fields all come from
+   css/grownup.css, shared with Tidy Up and Behaviour Garden. What is left
+   here is the letter-mastery grid and the guide index, which are only
+   this app's. */
+
+.grownup .p-stats { display: flex; gap: 2.4rem; }
+.grownup .p-num { font-size: 2.2rem; font-weight: 700; display: block; line-height: 1; }
+.grownup .p-lab { color: var(--gu-muted); font-size: 0.9rem; }
+
+.grownup .p-letters { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+             gap: 0.55rem; }
+.grownup .p-cell { text-align: center; }
+.grownup .p-cell.off { opacity: 0.3; }
+/* The letters themselves stay in the child's typeface: this is a picture of
+   what they have seen, so a single-storey a has to read as the same letter. */
+.grownup .p-ch  { font-family: 'Andika', var(--gu-font); font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.grownup .p-bar { height: 7px; background: var(--gu-line); border-radius: 4px; overflow: hidden; }
+.grownup .p-fill{ height: 100%; background: var(--gu-warm); border-radius: 4px; transition: width 0.3s ease; }
+.grownup .p-fill.solid { background: var(--gu-accent); }
+.grownup .p-bar + .p-bar { margin-top: 3px; }
+.grownup .p-fill-pair { background: #c9b79c; }
+.grownup .p-fill-pair.solid { background: var(--gu-accent); opacity: 0.55; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -279,11 +254,7 @@ html, body {
   50%      { transform: translateY(-6px); }
 }
 
-.p-last { color: var(--muted); font-size: 1rem; margin: 0.2rem 0 0; }
 
-.p-bar + .p-bar { margin-top: 3px; }
-.p-fill-pair { background: #c9b79c; }
-.p-fill-pair.solid { background: var(--accent); opacity: 0.55; }
 
 /* ============================================================
    Parent coaching guides
@@ -329,7 +300,7 @@ html, body {
 .guide-emoji {
   font-size: 1.9rem; line-height: 1; flex: none;
   width: 58px; height: 58px; border-radius: 16px;
-  background: var(--accent-bg); display: grid; place-items: center;
+  background: var(--gu-accent-bg); display: grid; place-items: center;
 }
 .guide-eyebrow {
   margin: 0 0 0.15rem; font-size: 0.72rem; font-weight: 700;
@@ -341,11 +312,11 @@ html, body {
 }
 .guide-lead {
   margin: 0 0 1.6rem; font-size: 1.12rem; line-height: 1.55;
-  color: var(--ink-2);
+  color: var(--gu-ink-2);
 }
 
 .g-sec {
-  background: var(--paper);
+  background: var(--gu-raise);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 1rem 1.15rem;
@@ -358,23 +329,23 @@ html, body {
   letter-spacing: -0.01em; line-height: 1.35;
 }
 .g-body {
-  margin: 0; font-size: 1rem; line-height: 1.62; color: var(--ink-2);
+  margin: 0; font-size: 1rem; line-height: 1.62; color: var(--gu-ink-2);
   padding-left: 1.6rem;
 }
 
 /* The script is the most useful thing on the page, so it gets to look it. */
 .g-say {
-  background: var(--accent-bg); border-color: #cfe0d7;
+  background: var(--gu-accent-bg); border-color: #cfe0d7;
   border-left: 4px solid var(--accent);
 }
-.g-say .g-h { color: var(--accent-d); }
+.g-say .g-h { color: var(--gu-accent-d); }
 .g-say .g-body { font-size: 1.1rem; color: #2c4a41; }
 
-.g-watch { background: var(--amber-bg); border-color: #f0e0c4; }
-.g-watch .g-h { color: var(--amber); }
+.g-watch { background: var(--gu-amber-bg); border-color: #f0e0c4; }
+.g-watch .g-h { color: var(--gu-amber); }
 
-.g-avoid { background: var(--rose-bg); border-color: #f0d6d0; }
-.g-avoid .g-h { color: var(--rose); }
+.g-avoid { background: var(--gu-rose-bg); border-color: #f0d6d0; }
+.g-avoid .g-h { color: var(--gu-rose); }
 
 .g-tip { background: var(--soft); border-color: transparent; }
 .g-tip .g-body { font-size: 0.96rem; }
@@ -385,33 +356,37 @@ html, body {
   border-top: 1px solid var(--line);
   background: var(--bg);
 }
-.guide-foot .btn { font-family: var(--ui); font-size: 1.02rem; min-height: 54px; }
+.guide-foot .btn { min-height: 46px; }
 
 /* Guide index inside the grown-up panel */
-.p-guides { display: flex; flex-direction: column; gap: 0.5rem; max-width: 620px; }
-.p-guide {
+/* Guide index inside the grown-up panel */
+.grownup .p-guides { display: flex; flex-direction: column; gap: 0.5rem; }
+.grownup .p-guide {
   display: flex; align-items: center; gap: 0.9rem; text-align: left;
-  background: var(--paper); border: 1px solid var(--line);
-  border-radius: 14px; padding: 0.85rem 1rem; cursor: pointer;
-  font-family: var(--ui); color: var(--ink);
-  transition: border-color 0.15s ease;
+  background: var(--gu-sunk); border: 1px solid var(--gu-line);
+  border-radius: 12px; padding: 0.85rem 1rem; cursor: pointer;
+  font-family: var(--gu-font); color: var(--gu-ink); width: 100%;
 }
-.p-guide:active { border-color: var(--accent); }
-.p-guide-emoji { font-size: 1.5rem; flex: none; }
-.p-guide-txt { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; min-width: 0; }
-.p-guide-title { font-weight: 700; font-size: 1.02rem; }
-.p-guide-lead {
-  font-size: 0.88rem; color: var(--muted); line-height: 1.4;
+.grownup .p-guide:active { border-color: var(--gu-accent); background: var(--gu-accent-bg); }
+.grownup .p-guide-emoji { font-size: 1.5rem; flex: none; }
+.grownup .p-guide-txt { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; min-width: 0; }
+.grownup .p-guide-title { font-weight: 600; font-size: 0.95rem; }
+.grownup .p-guide-lead {
+  font-size: 0.85rem; color: var(--gu-muted); line-height: 1.4;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.p-guide-chev { color: var(--line); font-size: 1.6rem; flex: none; }
+.grownup .p-guide-chev { color: var(--gu-line-2); font-size: 1.6rem; flex: none; }
 
-/* The grown-up panel is prose too, so give it the same voice. */
-.p-h, .p-sub, .p-note, .p-lab, .p-last, .p-check, .p-select, .p-val {
-  font-family: var(--ui);
-}
-.p-note { line-height: 1.55; }
+/* The guide screen scrolls its own middle under a sticky footer, so the
+   sheet-level scroll that .grownup brings would be a second one. It has no
+   .gu-head, so it keeps the safe-area padding .screen gives it. */
+#screen-guide.grownup { overflow: hidden; }
+
+/* The panel does have one, and .gu-head clears the notch itself, so the
+   screen underneath must not clear it a second time. */
+#screen-parent.grownup { padding-top: 0; }
+
 
 /* ---------- Listen & Blend: pictures, no print ---------- */
 .pics { display: flex; gap: clamp(0.8rem, 3vw, 1.8rem); flex-wrap: wrap; justify-content: center; }
