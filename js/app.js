@@ -387,7 +387,12 @@ const App = (function () {
       show('home');
     };
     document.getElementById('p-reset').onclick = function () {
-      if (confirm('Erase all progress and start from Level 1?')) {
+      const room = Sync.handle() && Sync.handle().roomCode;
+      const msg = room
+        ? 'Erase all progress and start from Level 1? This clears it on this device '
+          + 'and on every device sharing code ' + room + '.'
+        : 'Erase all progress and start from Level 1?';
+      if (confirm(msg)) {
         Progress.reset(); buildParent(); buildHome();
       }
     };
@@ -411,6 +416,17 @@ const App = (function () {
     document.addEventListener('touchmove', function (e) {
       if (e.touches.length > 1) e.preventDefault();
     }, { passive: false });
+
+    /* Repaint when a remote record lands or the connection state moves.
+
+       Never during a game. screen-play owns the screen for a whole session, and
+       a question changing under a child part way through answering it is worse
+       than a letter score that is a few seconds stale. Home and the grown-up
+       panel are both passive, so those refresh. */
+    Sync.onRender(function () {
+      if (current === 'parent') buildParent();
+      else if (current === 'home') buildHome();
+    });
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

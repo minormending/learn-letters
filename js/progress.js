@@ -8,15 +8,35 @@ const Settings = (function () {
     rewards: true,       // emoji payoff after a correct word read
     guideFirst: true,    // show the coaching guide before an unplayed game
     seenGuides: {},      // which guides have already been shown
-    maxLevel: 0          // 0 = follow unlocks, >0 = parent pinned a level
+    maxLevel: 0,         // 0 = follow unlocks, >0 = parent pinned a level
+    /* When these last changed. Every setting here is a switch a grown-up can
+       turn OFF, and a merge that keeps the higher or truer value cannot say
+       that — so the newest block wins, and this is how "newest" is decided. */
+    settingsAt: 0
   };
   let s;
   try { s = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || '{}')); }
   catch (e) { s = Object.assign({}, DEFAULTS); }
 
+  function write() { localStorage.setItem(KEY, JSON.stringify(s)); }
+
   return {
     get: k => s[k],
-    set: function (k, v) { s[k] = v; localStorage.setItem(KEY, JSON.stringify(s)); },
+    set: function (k, v) {
+      s[k] = v;
+      s.settingsAt = Date.now();
+      write();
+      if (typeof Sync !== 'undefined') Sync.push();
+    },
+    /* Take a merged settings block wholesale. Only called by the sync layer. */
+    adopt: function (next, at) {
+      if (!next || typeof next !== 'object') return;
+      Object.keys(DEFAULTS).forEach(function (k) {
+        if (k !== 'settingsAt' && next[k] !== undefined) s[k] = next[k];
+      });
+      s.settingsAt = Number(at) || 0;
+      write();
+    },
     all: () => s
   };
 })();
@@ -29,12 +49,22 @@ const Progress = (function () {
   let p;
   try { p = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { p = null; }
   if (!p || p.version !== 1) {
-    p = { version: 1, level: 1, letters: {}, pairs: {}, ear: 0,
-          sessions: 0, lastPlayed: null };
+    p = { version: 1, level: 1, letters: {}, pairs: {}, ear: 0, earSeen: 0,
+          sessions: 0, lastPlayed: null, resetEpoch: 0 };
   }
   if (typeof p.ear !== 'number') p.ear = 0;
+  /* Older saves predate both of these. earSeen counts ear attempts so a dropped
+     ear score can be told apart from a stale one; resetEpoch lets a reset beat
+     a merge. Both default to 0, which is correct for an existing save. */
+  if (typeof p.earSeen !== 'number') p.earSeen = 0;
+  if (typeof p.resetEpoch !== 'number') p.resetEpoch = 0;
 
-  function save() { localStorage.setItem(KEY, JSON.stringify(p)); }
+  /* Every change to progress already funnels through here, which makes it the
+     one honest place to notice something changed and needs publishing. */
+  function save() {
+    localStorage.setItem(KEY, JSON.stringify(p));
+    if (typeof Sync !== 'undefined') Sync.push();
+  }
 
   /* Recently-served items, per run rather than persisted. Weighted random
      will happily serve the same letter three times running, which reads as
@@ -164,6 +194,9 @@ const Progress = (function () {
 
   function markEar(correct) {
     p.ear = correct ? Math.min(EAR_MAX, p.ear + 1) : Math.max(0, p.ear - 2);
+    /* Only ever rises, so it is the clock that tells a merge which device's ear
+       score is the more recent one. Without it a drop looks like being behind. */
+    p.earSeen++;
     save();
   }
 
@@ -217,13 +250,40 @@ const Progress = (function () {
   }
 
   function reset() {
-    p = { version: 1, level: 1, letters: {}, pairs: {}, ear: 0,
-          sessions: 0, lastPlayed: null };
+    /* The epoch carries across the wipe and goes up by one. Otherwise the other
+       device reads a fresh save as simply being behind and refills all of it. */
+    const epoch = (p.resetEpoch || 0) + 1;
+    p = { version: 1, level: 1, letters: {}, pairs: {}, ear: 0, earSeen: 0,
+          sessions: 0, lastPlayed: null, resetEpoch: epoch };
     save();
   }
+
+  /* ---- the seam the sync layer talks to ---- */
+
+  function syncSnapshot() {
+    return SyncState.subset(Object.assign({}, p, {
+      settings: Settings.all(),
+      settingsAt: Settings.get('settingsAt')
+    }));
+  }
+
+  /** Take a merged record. Returns true if anything actually moved. */
+  function syncAdopt(merged) {
+    if (!merged || typeof merged !== 'object') return false;
+    const before = JSON.stringify(syncSnapshot());
+    ['level', 'letters', 'pairs', 'ear', 'earSeen', 'sessions', 'lastPlayed', 'last', 'resetEpoch']
+      .forEach(function (k) { if (merged[k] !== undefined) p[k] = merged[k]; });
+    Settings.adopt(merged.settings, merged.settingsAt);
+    localStorage.setItem(KEY, JSON.stringify(p));
+    return JSON.stringify(syncSnapshot()) !== before;
+  }
+
+  function syncEpochs() { return { resetEpoch: p.resetEpoch || 0 }; }
+  function liftEpoch(to) { p.resetEpoch = Math.max(p.resetEpoch || 0, Number(to) || 0); }
 
   return { score, pairScore, markLetter, markPair, level, checkUnlock,
            activeLetters, activeWords, pickLetter, pickPair, pickWord,
            startSession, recordSession, summary, reset, MASTERED, MAX,
-           ear, earStage, markEar, earTier, earChoices, pickHeard, EAR_MAX };
+           ear, earStage, markEar, earTier, earChoices, pickHeard, EAR_MAX,
+           syncSnapshot, syncAdopt, syncEpochs, liftEpoch };
 })();
