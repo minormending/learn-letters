@@ -32,6 +32,13 @@
      signals that a screen is for the grown-up rather than the child. */
   --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --tap: min(19vw, 148px);
+
+  /* The front door's skeleton is in css/landing.css; the paint is ours. */
+  --ld-ink:     var(--ink);
+  --ld-lede:    var(--muted);
+  --ld-cap:     var(--muted);
+  --ld-go-bg:   var(--accent);
+  --ld-go-deep: var(--accent-d);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }

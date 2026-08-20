@@ -433,6 +433,19 @@ const App = (function () {
     };
   }
 
+  /* The column fades, then the screen swaps underneath it. Everything after
+     the swap runs from the callback so a fade that never fires -- reduced
+     motion, a backgrounded tab -- cannot strand the app on the front door. */
+  function leaveLanding(then) {
+    const pad = document.getElementById('landing');
+    if (!pad) { then(); return; }
+    pad.classList.add('is-going');
+    setTimeout(function () {
+      then();
+      pad.classList.remove('is-going');
+    }, 260);
+  }
+
   /* Press and hold to open, so a five-year-old does not wander in. */
   function holdToOpen(node, ms, fn) {
     let timer = null;
@@ -457,20 +470,24 @@ const App = (function () {
       screens[n] = document.getElementById('screen-' + n);
     });
 
+    /* The button is a wordless play triangle now, so what it is doing has
+       to be said in the caption underneath instead of on the button. */
     document.getElementById('start-btn').onclick = function () {
       const btn = document.getElementById('start-btn');
+      const cap = document.getElementById('start-cap');
       btn.disabled = true;
-      btn.textContent = 'Getting ready…';
+      cap.textContent = 'Getting ready…';
+      document.getElementById('start-err').textContent = '';
       Audio3.unlock()
         .then(function () { return Audio3.load(Audio3.allPhonemeFiles()); })
         .then(function () {
           buildHome();
-          show('home');
+          leaveLanding(function () { show('home'); });
         })
         .catch(function (e) {
           console.error(e);
           btn.disabled = false;
-          btn.textContent = 'Tap to start';
+          cap.textContent = 'Tap to start';
           document.getElementById('start-err').textContent =
             'Could not load the sounds. Check your connection and try again.';
         });

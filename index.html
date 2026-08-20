@@ -22,13 +22,17 @@
 <body>
 
 <!-- Tap-to-start exists because iOS will not let audio play until the
-     child (or grown-up) has touched the screen once. -->
+     child (or grown-up) has touched the screen once. It doubles as the
+     front door, and it is the same one the other two games open on. -->
 <section id="screen-start" class="screen on">
-  <div class="pad">
-    <h1 class="brand">Letter Sounds</h1>
-    <p class="lede">Short practice. Real sounds. No guessing.</p>
-    <button id="start-btn" class="btn btn-big">Tap to start</button>
-    <p id="start-err" class="err"></p>
+  <div class="landing" id="landing">
+    <h1 class="landing-name">Letter Sounds</h1>
+    <p class="landing-lede">Short practice. Real sounds. No guessing.</p>
+    <button id="start-btn" class="landing-go" aria-label="Start">
+      <svg viewBox="0 0 24 24" class="landing-go-glyph" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+    </button>
+    <p id="start-cap" class="landing-cap">Tap to start</p>
+    <p id="start-err" class="landing-err"></p>
   </div>
 </section>
 
