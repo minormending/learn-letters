@@ -8,6 +8,7 @@ const App = (function () {
   const screens = {};
   let current = null;
   let gate = null;
+  let syncCard = null;
   let session = null;
   let sessionSeq = 0;
 
@@ -334,103 +335,30 @@ const App = (function () {
 
   /* ---------- sharing between devices ---------- */
 
-  const JOIN_ERRORS = {
-    malformed: 'That code is not complete — three words and three numbers.',
-    'not-found': 'No device found with that code. Check for a typo, or press Start '
-                 + 'sharing on the other one for a fresh code.',
-    network: 'Could not reach the network just now. Try again in a moment.',
-    'not-configured': 'Sharing is not available on this device.'
-  };
-
+  /* The card, the pairing flow and every string in it come from
+     suite/sync-card.js. What is this app's is the prose -- what travels and
+     what does not is different in every game -- and claiming the room, which
+     is tangled up with how a reset merges. */
   function buildSync() {
-    const handle = Sync.handle();
-    const paired = handle && handle.roomCode;
-    const status = handle ? handle.status : 'local';
-    const note = document.getElementById('p-sync-state');
-
-    if (!handle) {
-      note.textContent = 'Sharing is unavailable — this device could not reach the '
-        + 'service. Progress is saved here as usual.';
-    } else if (!paired) {
-      note.textContent = 'Not sharing. This device keeps its own record.';
-    } else if (status === 'synced') {
-      note.textContent = 'Sharing with code ' + handle.roomCode + '.';
-    } else if (status === 'offline') {
-      note.textContent = 'Sharing with code ' + handle.roomCode + ' — offline just now. '
-        + 'It will catch up when the connection returns.';
-    } else {
-      note.textContent = 'Connecting…';
-    }
-
-    document.getElementById('p-sync-off').hidden = !handle || !!paired;
-    document.getElementById('p-sync-on').hidden = !handle || !paired;
-    document.getElementById('p-sync-code').textContent = paired ? handle.roomCode : '';
-  }
-
-  function bindSync() {
-    document.getElementById('p-sync-start').onclick = function () {
-      const handle = Sync.handle();
-      if (!handle) return;
-      const btn = document.getElementById('p-sync-start');
-      btn.disabled = true;
-      handle.createRoom().then(function (code) {
-        /* Claim it now. Sync.apply would otherwise only learn the room when a
-           remote record arrived, and until then a reset from the other device
-           would look like first contact and be levelled away instead of
-           applied. Safe here because we seeded this room ourselves. */
-        Sync.claimRoom(code);
-      }).catch(function () {
-        document.getElementById('p-sync-state').textContent = 'Could not start sharing just now.';
-      }).then(function () {
-        btn.disabled = false;
-        buildSync();
-      });
-    };
-
-    document.getElementById('p-sync-join').onclick = function () {
-      document.getElementById('p-sync-join-box').hidden = false;
-      document.getElementById('p-sync-msg').hidden = true;
-      document.getElementById('p-sync-input').value = '';
-      document.getElementById('p-sync-input').focus();
-    };
-
-    document.getElementById('p-sync-cancel').onclick = function () {
-      document.getElementById('p-sync-join-box').hidden = true;
-    };
-
-    function join() {
-      const handle = Sync.handle();
-      if (!handle) return;
-      const msg = document.getElementById('p-sync-msg');
-      const go = document.getElementById('p-sync-go');
-      go.disabled = true;
-      handle.joinRoom(document.getElementById('p-sync-input').value).then(function (res) {
-        go.disabled = false;
-        msg.hidden = false;
-        if (res.ok) {
-          msg.textContent = 'Connected. The two records are merging now.';
-          document.getElementById('p-sync-join-box').hidden = true;
-          buildSync();
-        } else {
-          msg.textContent = JOIN_ERRORS[res.reason] || 'That did not work. Try again.';
-        }
-      });
-    }
-
-    document.getElementById('p-sync-go').onclick = join;
-    document.getElementById('p-sync-input').onkeydown = function (e) {
-      if (e.key === 'Enter') join();
-    };
-
-    document.getElementById('p-sync-stop').onclick = function () {
-      const handle = Sync.handle();
-      if (!handle) return;
-      handle.leaveRoom();
-      /* Forget the room, so rejoining later counts as first contact again rather
-         than inheriting a reset that happened while this device was away. */
-      Sync.forgetRoom();
-      buildSync();
-    };
+    if (syncCard) return syncCard.render();
+    syncCard = SyncCard.mount({
+      host: '#p-sync-card',
+      handle: function () { return Sync.handle(); },
+      noun: 'device',
+      lede: [
+        'Keeps progress in step as you go, so ten minutes on the iPad and ten on '
+        + 'your phone add up to one record instead of two. Letter and matching '
+        + 'scores, the level, blending-by-ear, and these settings all travel.',
+        'Nothing about your child does. There are no names, no recordings and no '
+        + 'words typed by anyone in here \u2014 only which sounds are solid and which '
+        + 'need more practice.',
+      ],
+      joinNote: 'Type the code shown on the other device. Connecting merges the two '
+        + 'records \u2014 a letter is kept at whichever device practised it most '
+        + 'recently, so nothing is lost either way.',
+      onCreated: function (code) { Sync.claimRoom(code); },
+      onLeft: function () { Sync.forgetRoom(); },
+    });
   }
 
   /* ---------- boot ---------- */
@@ -504,8 +432,6 @@ const App = (function () {
     document.addEventListener('touchmove', function (e) {
       if (e.touches.length > 1) e.preventDefault();
     }, { passive: false });
-
-    bindSync();
 
     /* Repaint when a remote record lands or the connection state moves.
 

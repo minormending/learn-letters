@@ -136,39 +136,8 @@
         <span>Never use the device voice (blended sounds only)</span></label>
     </section>
 
-    <section class="block">
-      <h2>Two devices at once</h2>
-      <p class="hint">Keeps progress in step as you go, so ten minutes on the iPad and
-        ten on your phone add up to one record instead of two. Letter and matching scores,
-        the level, blending-by-ear, and these settings all travel.</p>
-      <p class="hint">Nothing about your child does. There are no names, no recordings and
-        no words typed by anyone in here &mdash; only which sounds are solid and which need
-        more practice.</p>
-      <p class="stat" id="p-sync-state"></p>
-
-      <div class="btn-row" id="p-sync-off" hidden>
-        <button id="p-sync-start" class="btn btn--go">Start sharing</button>
-        <button id="p-sync-join" class="btn btn--quiet">Enter a code</button>
-      </div>
-
-      <div class="btn-row" id="p-sync-on" hidden>
-        <code class="sync-code" id="p-sync-code"></code>
-        <button id="p-sync-stop" class="btn btn--quiet">Stop sharing here</button>
-      </div>
-
-      <div id="p-sync-join-box" hidden>
-        <p class="hint">Type the code shown on the other device. Connecting merges the
-          two records &mdash; a letter is kept at whichever device practised it most
-          recently, so nothing is lost either way.</p>
-        <input class="input input--code" id="p-sync-input" type="text" placeholder="WORD-WORD-WORD-123"
-               autocomplete="off" autocapitalize="characters" spellcheck="false">
-        <div class="btn-row">
-          <button id="p-sync-go" class="btn btn--go">Connect</button>
-          <button id="p-sync-cancel" class="btn btn--quiet">Cancel</button>
-        </div>
-        <p class="hint" id="p-sync-msg" hidden></p>
-      </div>
-    </section>
+    <!-- The sharing card renders in here: suite/sync-card.js. -->
+    <div id="p-sync-card"></div>
 
     <section class="block">
       <h2>Starting over</h2>
@@ -185,6 +154,7 @@
 
 <script src="suite/landing.js"></script>
 <script src="suite/gate.js"></script>
+<script src="suite/sync-card.js"></script>
 <script src="js/data.js"></script>
 <script src="js/guides.js"></script>
 <script src="js/sync-state.js"></script>
