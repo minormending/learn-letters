@@ -20,20 +20,11 @@
 </head>
 <body>
 
-<!-- Tap-to-start exists because iOS will not let audio play until the
-     child (or grown-up) has touched the screen once. It doubles as the
-     front door, and it is the same one the other two games open on. -->
-<section id="screen-start" class="screen on">
-  <div class="landing" id="landing">
-    <h1 class="landing-name">Letter Sounds</h1>
-    <p class="landing-lede">Short practice. Real sounds. No guessing.</p>
-    <button id="start-btn" class="landing-go" aria-label="Start">
-      <svg viewBox="0 0 24 24" class="landing-go-glyph" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
-    </button>
-    <p id="start-cap" class="landing-cap">Tap to start</p>
-    <p id="start-err" class="landing-err"></p>
-  </div>
-</section>
+<!-- The front door renders in here. Tap-to-start exists because iOS will not
+     let audio play until the child (or grown-up) has touched the screen once;
+     it doubles as the front door, and it is the same one the other games open
+     on. Markup and fade: suite/landing.js. -->
+<section id="screen-start" class="screen on"></section>
 
 <section id="screen-home" class="screen">
   <div class="pad">
@@ -205,6 +196,7 @@
   </svg>
 </button>
 
+<script src="suite/landing.js"></script>
 <script src="js/data.js"></script>
 <script src="js/guides.js"></script>
 <script src="js/sync-state.js"></script>
