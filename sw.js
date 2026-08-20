@@ -1,6 +1,11 @@
 /* Offline cache. The whole app is ~700KB, so precache all of it: this is
-   for a five-year-old in a car, not a page that needs to be clever. */
-const CACHE = 'letter-sounds-v4';
+   for a five-year-old in a car, not a page that needs to be clever.
+
+   The sync files are precached with everything else. The Firebase SDK they pull
+   from a CDN is not, deliberately — offline the import fails, the bridge catches
+   it, and the app runs local-only. Which is the point: a child in a car with no
+   signal must still get a full session. */
+const CACHE = 'letter-sounds-v5';
 
 const ASSETS = [
   './',
@@ -10,9 +15,14 @@ const ASSETS = [
   'js/data.js',
   'js/guides.js',
   'js/progress.js',
+  'js/sync-state.js',
+  'js/sync.js',
   'js/audio.js',
   'js/modes.js',
   'js/app.js',
+  'sync/firebase-config.js',
+  'sync/kidsync.js',
+  'sync/bridge.js',
   'fonts/andika-400.woff2',
   'fonts/andika-700.woff2',
   'icons/icon-180.png',
