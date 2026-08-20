@@ -19,6 +19,8 @@ const App = (function () {
     Object.keys(screens).forEach(function (k) {
       screens[k].classList.toggle('on', k === name);
     });
+    const corner = document.getElementById('parent-corner');
+    if (corner) corner.hidden = !(name === 'home' || name === 'done');
     current = name;
   }
 
@@ -435,11 +437,11 @@ const App = (function () {
   function holdToOpen(node, ms, fn) {
     let timer = null;
     const down = function () {
-      node.classList.add('holding');
-      timer = setTimeout(function () { node.classList.remove('holding'); fn(); }, ms);
+      node.classList.add('is-holding');
+      timer = setTimeout(function () { node.classList.remove('is-holding'); fn(); }, ms);
     };
     const up = function () {
-      node.classList.remove('holding');
+      node.classList.remove('is-holding');
       if (timer) { clearTimeout(timer); timer = null; }
     };
     node.addEventListener('touchstart', down, { passive: true });
@@ -500,7 +502,7 @@ const App = (function () {
       }
     };
 
-    holdToOpen(document.getElementById('home-title'), 1400, function () {
+    holdToOpen(document.getElementById('parent-corner'), 1600, function () {
       buildParent(); show('parent');
     });
 

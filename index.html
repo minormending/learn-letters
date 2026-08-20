@@ -32,10 +32,9 @@
 
 <section id="screen-home" class="screen">
   <div class="pad">
-    <h1 id="home-title" class="brand hold-target">Letter Sounds</h1>
+    <h1 id="home-title" class="brand">Letter Sounds</h1>
     <p id="home-level" class="level-line"></p>
     <div id="mode-grid" class="mode-grid"></div>
-    <p class="hint-line">Hold the title for grown-up settings</p>
   </div>
 </section>
 
@@ -162,6 +161,20 @@
     </div>
   </div>
 </section>
+
+<button class="gu-corner" id="parent-corner" aria-label="Grown-up settings, press and hold" hidden>
+  <svg class="gu-ring" viewBox="0 0 48 48" aria-hidden="true">
+    <circle cx="24" cy="24" r="22"></circle>
+  </svg>
+  <svg class="gu-glyph" viewBox="0 0 24 24" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M3.5 8.5h8.5M18 8.5h2.5"></path>
+      <path d="M3.5 15.5h2.5M12 15.5h8.5"></path>
+      <circle cx="15" cy="8.5" r="3"></circle>
+      <circle cx="9" cy="15.5" r="3"></circle>
+    </g>
+  </svg>
+</button>
 
 <script src="js/data.js"></script>
 <script src="js/guides.js"></script>

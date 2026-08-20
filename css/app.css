@@ -68,11 +68,6 @@ html, body {
 .err     { color: #b4503c; min-height: 1.4em; margin: 0; }
 .level-line { color: var(--muted); font-size: clamp(0.95rem, 2.2vw, 1.2rem);
               margin: -0.4rem 0 0.6rem; letter-spacing: 0.22em; }
-.hint-line  { color: var(--line); font-size: 0.85rem; margin: 0.4rem 0 0; }
-
-.hold-target { transition: transform 1.4s ease, color 1.4s ease; }
-.hold-target.holding { transform: scale(0.94); color: var(--accent); }
-
 /* ---------- buttons ---------- */
 .btn {
   font-family: inherit; font-size: clamp(1.05rem, 2.6vw, 1.4rem); font-weight: 700;
