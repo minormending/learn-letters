@@ -1,8 +1,12 @@
 # Letter Sounds
 
 A small, deliberately quiet phonics practice game for a beginning reader.
-Static site, no build step, no accounts, no network calls. Runs offline once
-loaded and installs to an iPad home screen.
+Static site, no build step, no accounts. Runs offline once loaded and installs
+to an iPad home screen.
+
+Sharing progress between two devices is the one thing here that touches the
+network, and it is off until a grown-up turns it on. Leave it off and there are
+no network calls at all.
 
 ## Why it is built this way
 
@@ -163,6 +167,51 @@ Press and hold the title on the home screen for about 1.5 seconds. Shows
 per-letter mastery bars, last session result, and controls for session length,
 level pinning (auto-advance or stay put), and the two audio/reward switches.
 
+## Two devices at once
+
+An iPad at home and a phone in a waiting room are two halves of the same
+practice, and by default they were two unrelated records — each thinking the
+child was shakier than they are, each re-teaching what the other had already
+settled. Turn sharing on in the grown-up panel, read the code off one device,
+type it into the other, and there is one record.
+
+What travels: per-letter sound scores, big/little matching scores, the level,
+the blending-by-ear score, session count, and the grown-up settings. What does
+not: anything about the child. There are no names, no recordings and no typed
+words in this app to send.
+
+**Scores are not merged by taking the higher one.** That matters more here than
+it looks. `mark()` drops a letter's score on a miss, deliberately — and the
+weighting that chooses the next letter reads those scores, so a merge that kept
+the best of both would delete every miss and quietly steer practice away from
+what the child actually finds hard. Instead each letter's `seen` count acts as
+its clock: it only ever rises, so the record with more attempts is the more
+recent one, and taking it preserves a drop as faithfully as a gain. The
+blending-by-ear score falls the same way and has its own counter for the same
+reason.
+
+Grown-up settings work the other way round, on a timestamp, because every one of
+them is a switch that can be turned *off* — which no "keep the higher value"
+rule can express. Guides already seen are unioned instead, being a record of the
+child rather than a preference.
+
+**Reset progress** needs an epoch to work at all: every per-field rule reads a
+fresh save as merely behind and refills it from the other device. Resetting bumps
+a counter that overrides the merge everywhere, and the confirmation says which
+code it is about to clear across. Joining a device to an existing code is never
+destructive, however many times that code has been reset.
+
+If sharing cannot start — no signal, blocked domain, missing config — it is one
+line in the console and an app that behaves exactly as it did before. This is a
+local app that can sync, not a sync app; a child in a car with no signal still
+gets a full session.
+
+Sharing has no accounts. Each device signs in anonymously so that unauthenticated
+access is refused and every write is attributable, but anyone can obtain an
+anonymous session, so that is not a privacy boundary: the room code is. Roughly
+2.1 billion of them. Fine for letter scores, which is exactly why nothing else is
+in there. `sync/RULES-EXPLAINED.md` goes through the database rules line by line.
+
 ## Levels
 
 | Level | New letters |
@@ -201,6 +250,16 @@ python3 -m http.server 8099
 
 A plain `file://` open will not work — the service worker and `fetch()` of the
 audio need an origin.
+
+### Tests
+
+```bash
+node test/sync-merge-test.js
+```
+
+Checks that merging two devices' progress converges and, above all, that a
+dropped score survives a merge. `js/sync-state.js` is deliberately free of
+storage and the DOM so the test can load it directly.
 
 ## Customising
 
