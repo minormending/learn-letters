@@ -5,7 +5,7 @@
    from a CDN is not, deliberately — offline the import fails, the bridge catches
    it, and the app runs local-only. Which is the point: a child in a car with no
    signal must still get a full session. */
-const CACHE = 'letter-sounds-v8';
+const CACHE = 'letter-sounds-v9';
 
 const ASSETS = [
   './',
@@ -13,6 +13,7 @@ const ASSETS = [
   'manifest.webmanifest',
   'css/app.css',
   'css/grownup.css',
+  'css/landing.css',
   'js/data.js',
   'js/guides.js',
   'js/progress.js',
