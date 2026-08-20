@@ -172,20 +172,33 @@ two audio/reward switches.
 
 ## The shared look
 
-The front door this app opens on — its name, the line under it, the round play
-button — and the grown-up panel's controls are not written here. They are
+Four things are not written here. They are
 [minormending/kidsuite](https://github.com/minormending/kidsuite), vendored into
 `suite/` the same way `sync/` is, and shared with the other games so the three
 read as one suite rather than three unrelated apps.
+
+| | |
+|---|---|
+| `landing.css` + `landing.js` | the front door — the name, the line under it, the round play button, and the fade out of it |
+| `gate.js` | the hold-to-open button that reaches the grown-up panel |
+| `sync-card.js` | the whole *Two devices at once* card, including the pairing flow |
+| `grownup.css` | the panel's controls — cards, buttons, fields |
 
 Edit it there and run `kidsuite/tools/install`, which also reminds you to bump
 `CACHE` in `sw.js`; `kidsuite/tools/check` fails if a copy has drifted. Never
 edit `suite/` directly.
 
-What belongs to *this* app is the paint and the timing: the `--ld-` and `--gu-`
-tokens at the top of `css/app.css`, and the fact that the door cannot let go
-until the phoneme audio has loaded — iOS will not play a sound until the child
-has touched the screen once, which is why there is a door here at all.
+What belongs to *this* app is small, and worth knowing exactly:
+
+- **The paint** — the `--ld-` and `--gu-` tokens at the top of `css/app.css`.
+- **What the door waits for.** It cannot let go until the phoneme audio has
+  loaded, because iOS will not play a sound until the child has touched the
+  screen once, which is why there is a door here at all.
+- **Where the way in is offered** — the menu and the end-of-session screen,
+  never over a question.
+- **The sharing card's prose**, and claiming a room after creating one. What
+  travels is different in every game, so the two sentences are written here even
+  though the card around them is not.
 
 ## Two devices at once
 
@@ -225,7 +238,9 @@ The `sync/` folder is vendored rather than written here: its canonical copy is
 [minormending/kidsync](https://github.com/minormending/kidsync), shared with the other games. Edit it there and run
 `kidsync/tools/install`, which also reminds you to bump `CACHE` in `sw.js`;
 `kidsync/tools/check` fails if a copy has drifted. What belongs to *this* app is
-`js/sync-state.js` — the scores-can-fall merge above — and the panel section.
+`js/sync-state.js` — the scores-can-fall merge above. The card in the panel is
+not: that is `suite/sync-card.js`, shared with the other games, and this app
+supplies only its wording and what to do once a room exists.
 
 If sharing cannot start — no signal, blocked domain, missing config — it is one
 line in the console and an app that behaves exactly as it did before. This is a
