@@ -7,6 +7,7 @@
 const App = (function () {
   const screens = {};
   let current = null;
+  let gate = null;
   let session = null;
   let sessionSeq = 0;
 
@@ -19,8 +20,7 @@ const App = (function () {
     Object.keys(screens).forEach(function (k) {
       screens[k].classList.toggle('on', k === name);
     });
-    const corner = document.getElementById('parent-corner');
-    if (corner) corner.hidden = !(name === 'home' || name === 'done');
+    if (gate) gate.toggle(name === 'home' || name === 'done');
     current = name;
   }
 
@@ -433,24 +433,6 @@ const App = (function () {
     };
   }
 
-  /* Press and hold to open, so a five-year-old does not wander in. */
-  function holdToOpen(node, ms, fn) {
-    let timer = null;
-    const down = function () {
-      node.classList.add('is-holding');
-      timer = setTimeout(function () { node.classList.remove('is-holding'); fn(); }, ms);
-    };
-    const up = function () {
-      node.classList.remove('is-holding');
-      if (timer) { clearTimeout(timer); timer = null; }
-    };
-    node.addEventListener('touchstart', down, { passive: true });
-    node.addEventListener('mousedown', down);
-    ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(function (e) {
-      node.addEventListener(e, up);
-    });
-  }
-
   /* ---------- boot ---------- */
   function init() {
     ['start', 'home', 'play', 'done', 'parent', 'guide'].forEach(function (n) {
@@ -500,8 +482,11 @@ const App = (function () {
       }
     };
 
-    holdToOpen(document.getElementById('parent-corner'), 1600, function () {
-      buildParent(); show('parent');
+    /* The way in, from suite/gate.js: press and hold, so a five-year-old does
+       not wander in. */
+    gate = Gate.mount({
+      hidden: true,                 // boot happens on the start screen
+      onOpen: function () { buildParent(); show('parent'); },
     });
 
     /* Belt and braces on the suspended-context problem: resume when the app
