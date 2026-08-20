@@ -255,6 +255,24 @@ html, body {
 .p-check input { width: 26px; height: 26px; }
 .p-actions { display: flex; gap: 1rem; margin: 2.2rem 0 3rem; flex-wrap: wrap; }
 
+/* Sharing. The [hidden] rules are load-bearing: display:flex beats the hidden
+   attribute, and without them both button rows render at once. */
+.p-sync-row { display: flex; gap: 1rem; margin: 0.7rem 0; flex-wrap: wrap; align-items: center; }
+.p-sync-row[hidden] { display: none; }
+.p-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.05rem; font-weight: 700; letter-spacing: 0.02em;
+  padding: 0.6rem 0.8rem; border-radius: 12px;
+  background: var(--soft); color: var(--ink); word-break: break-all;
+}
+.p-input {
+  font-family: inherit; font-size: 1.05rem; padding: 0.7em 1em;
+  border-radius: 14px; border: 2px solid var(--line);
+  background: var(--surface); color: var(--ink);
+  max-width: 420px; width: 100%; box-sizing: border-box;
+  text-transform: uppercase;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

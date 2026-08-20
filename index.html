@@ -121,6 +121,38 @@
     <label class="p-check"><input type="checkbox" id="p-blendonly">
       <span>Never use the device voice (blended sounds only)</span></label>
 
+    <h3 class="p-sub">Two devices at once</h3>
+    <p class="p-note">Keeps progress in step as you go, so ten minutes on the iPad and
+      ten on your phone add up to one record instead of two. Letter and matching scores,
+      the level, blending-by-ear, and these settings all travel.</p>
+    <p class="p-note">Nothing about your child does. There are no names, no recordings and
+      no words typed by anyone in here &mdash; only which sounds are solid and which need
+      more practice.</p>
+    <p class="p-note" id="p-sync-state"></p>
+
+    <div class="p-sync-row" id="p-sync-off" hidden>
+      <button id="p-sync-start" class="btn btn-accent">Start sharing</button>
+      <button id="p-sync-join" class="btn btn-soft">Enter a code</button>
+    </div>
+
+    <div class="p-sync-row" id="p-sync-on" hidden>
+      <code class="p-code" id="p-sync-code"></code>
+      <button id="p-sync-stop" class="btn btn-soft">Stop sharing here</button>
+    </div>
+
+    <div id="p-sync-join-box" hidden>
+      <p class="p-note">Type the code shown on the other device. Connecting merges the
+        two records &mdash; a letter is kept at whichever device practised it most
+        recently, so nothing is lost either way.</p>
+      <input class="p-input" id="p-sync-input" type="text" placeholder="WORD-WORD-WORD-123"
+             autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <div class="p-sync-row">
+        <button id="p-sync-go" class="btn btn-accent">Connect</button>
+        <button id="p-sync-cancel" class="btn btn-soft">Cancel</button>
+      </div>
+      <p class="p-note" id="p-sync-msg" hidden></p>
+    </div>
+
     <div class="p-actions">
       <button id="p-reset" class="btn btn-warn">Reset progress</button>
       <button id="p-close" class="btn btn-accent">Done</button>
