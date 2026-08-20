@@ -163,9 +163,29 @@ tagged `say`, `do`, `watch`, `avoid` or `tip`, which is what colours them.
 
 ## Grown-up panel
 
-Press and hold the title on the home screen for about 1.5 seconds. Shows
-per-letter mastery bars, last session result, and controls for session length,
-level pinning (auto-advance or stay put), and the two audio/reward switches.
+Press and hold the round button in the top corner for about 1.5 seconds. A ring
+fills round it while you hold; a quick tap does nothing, which is what keeps a
+five-year-old out. It is offered on the menu and the end-of-session screen only,
+never over a question. Shows per-letter mastery bars, last session result, and
+controls for session length, level pinning (auto-advance or stay put), and the
+two audio/reward switches.
+
+## The shared look
+
+The front door this app opens on — its name, the line under it, the round play
+button — and the grown-up panel's controls are not written here. They are
+[minormending/kidsuite](https://github.com/minormending/kidsuite), vendored into
+`suite/` the same way `sync/` is, and shared with the other games so the three
+read as one suite rather than three unrelated apps.
+
+Edit it there and run `kidsuite/tools/install`, which also reminds you to bump
+`CACHE` in `sw.js`; `kidsuite/tools/check` fails if a copy has drifted. Never
+edit `suite/` directly.
+
+What belongs to *this* app is the paint and the timing: the `--ld-` and `--gu-`
+tokens at the top of `css/app.css`, and the fact that the door cannot let go
+until the phoneme audio has loaded — iOS will not play a sound until the child
+has touched the screen once, which is why there is a door here at all.
 
 ## Two devices at once
 
