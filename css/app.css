@@ -14,11 +14,19 @@
   --bg:      #f7f4ee;
   --surface: #ffffff;
   --ink:     #2f2a25;
-  --muted:   #8a8178;
+  /* 4.77:1 on the page ground, 4.80 on white. It was #8a8178 — 3.48 and
+     3.82, both under the 4.5 AA asks of body text. */
+  --muted:   #736b63;
   --line:    #e4ddd2;
   --accent:  #3f7d6a;
   --accent-d:#2f6153;
   --warm:    #d98a4a;
+  /* The same orange, dark enough to carry white text: 4.76:1 against
+     #fff, where --warm itself is 2.73. Two surfaces put white on this
+     colour — the mode flag and a lit answer box — and both were
+     illegible. --warm keeps its brightness for dots and borders, which
+     carry no text and are not held to a text ratio. */
+  --warm-deep: #aa6024;
   --yes:     #4f8a5b;
   --soft:    #efe9df;
   --ink-2:   #5d554c;
@@ -100,6 +108,13 @@ html, body {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 0.9rem; width: 100%; max-width: 760px;
 }
+/* **The card is a cell holding two buttons, not one button holding another.**
+   The help "?" used to be a <button> inside the <button> that launches the
+   mode, which is invalid HTML and unreachable: a screen reader announces the
+   card and never offers the guide, and the browser's own accessibility tree
+   drops the inner control. The wrapper carries the positioning so both buttons
+   are siblings and both can be reached. */
+.mode-cell { position: relative; display: grid; }
 .mode-card {
   display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
   background: var(--surface); border: 2px solid var(--line); border-radius: 22px;
@@ -185,7 +200,7 @@ html, body {
   border: 3px solid var(--line); border-radius: 20px; cursor: pointer;
   transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
 }
-.wbox.lit   { background: var(--warm); border-color: var(--warm); color: #fff;
+.wbox.lit   { background: var(--warm-deep); border-color: var(--warm-deep); color: #fff;
               transform: translateY(-8px) scale(1.05); }
 .wbox.empty { background: var(--soft); border-style: dashed; }
 
@@ -270,7 +285,7 @@ html, body {
    screens stay bare; this is where the detail is allowed to live.
    ============================================================ */
 
-.mode-card { position: relative; }
+/* positioning lives on .mode-cell */
 .mode-help {
   position: absolute; top: 8px; right: 8px;
   width: 34px; height: 34px; border-radius: 50%;
@@ -416,10 +431,10 @@ html, body {
 .pic-big { font-size: clamp(5rem, 20vh, 9rem); line-height: 1; }
 
 /* "Start here" cue on the mode that should come first. */
-.mode-card { position: relative; }
+/* positioning lives on .mode-cell */
 .mode-flag {
   position: absolute; top: -9px; left: 14px;
-  background: var(--warm); color: #fff;
+  background: var(--warm-deep); color: #fff;
   font-family: var(--ui); font-size: 0.68rem; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   padding: 0.25em 0.7em; border-radius: 999px;

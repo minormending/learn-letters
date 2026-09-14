@@ -33,26 +33,30 @@ const App = (function () {
     clear(grid);
     MODE_ORDER.forEach(function (id) {
       const m = MODES[id];
+      const cell = el('div', 'mode-cell');
       const card = el('button', 'mode-card');
       card.appendChild(el('span', 'mode-emoji', m.emoji));
       card.appendChild(el('span', 'mode-title', m.title));
       card.appendChild(el('span', 'mode-sub', m.sub));
       card.onclick = function () { launch(id); };
+      cell.appendChild(card);
 
       /* Coaching is a tap away rather than in the child's face. */
       /* Point a parent at blending-by-ear while it is still shaky. Blend It
          in front of a child who cannot blend by ear yet is the fastest way to
          convince them they cannot read. */
       if (id === 'hear' && Progress.ear() < Progress.EAR_MAX * 0.6) {
-        card.appendChild(el('span', 'mode-flag', 'Start here'));
+        cell.appendChild(el('span', 'mode-flag', 'Start here'));
       }
 
+      /* A sibling of the card, not a child of it: a button inside a button is
+         invalid, and the inner one never reaches the accessibility tree. */
       const help = el('button', 'mode-help', '?');
       help.setAttribute('aria-label', 'Parent guide for ' + m.title);
       help.onclick = function (e) { e.stopPropagation(); markGuideSeen(id); openGuide(id, id); };
-      card.appendChild(help);
+      cell.appendChild(help);
 
-      grid.appendChild(card);
+      grid.appendChild(cell);
     });
     const lvl = Progress.level();
     document.getElementById('home-level').textContent =
